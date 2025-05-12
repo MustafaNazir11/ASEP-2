@@ -1,0 +1,101 @@
+/* Exam Page Styles */
+.exam-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); /* Blue gradient for a cohesive theme */
+  padding: 2rem;
+}
+
+.exam-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.exam-header h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.exam-header p {
+  font-size: 1.125rem;
+  color: #d1d5db;  /* Light gray color for readability */
+}
+
+.exam-info {
+  width: 100%;
+  max-width: 500px;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  margin-bottom: 2rem;
+}
+
+.exam-info:hover {
+  transform: scale(1.05);  /* Hover effect to make the box interactive */
+}
+
+.exam-info h2 {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.exam-info p {
+  font-size: 1rem;
+  color: #e5e7eb;  /* Light text for readability */
+  margin-bottom: 0.5rem;
+}
+
+.exam-info p strong {
+  color: white;  /* Strong text to stand out */
+}
+
+.exam-button {
+  padding: 0.75rem 1.5rem;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-weight: bold;
+}
+
+.exam-button:hover {
+  background-color: #1d4ed8;  /* Darker blue when hovered */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .exam-info {
+    width: 90%;
+    padding: 1.5rem;
+  }
+
+  .exam-header h1 {
+    font-size: 2rem;
+  }
+
+  .exam-header p {
+    font-size: 1rem;
+  }
+
+  .exam-info h2 {
+    font-size: 1.5rem;
+  }
+
+  .exam-button {
+    padding: 0.5rem 1.2rem;
+  }
+}
