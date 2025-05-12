@@ -1,26 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../styles/ExamRoom.css';
-
-
+import MediaCheckModal from '../components/MediaCheckModal';
 
 const ExamPage = () => {
-  const handleStartExam = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      console.log('Access granted to camera and microphone');
+  const [showModal, setShowModal] = useState(false);
+  const [examStarted, setExamStarted] = useState(false);
 
-      // You can now pass `stream` to a video element or WebRTC logic
-      // For demo, attach to a hidden video element:
-      const videoElement = document.getElementById('exam-video');
-      if (videoElement) {
-        videoElement.srcObject = stream;
-        videoElement.play();
-      }
+  const handleMediaCheckComplete = () => {
+    setShowModal(false);
+    setExamStarted(true);
+    // Redirect to exam screen or initialize exam here if needed
+  };
 
-    } catch (error) {
-      console.error('Permission denied or error accessing media devices:', error);
-      alert('Camera and microphone access is required to take the exam.');
-    }
+  const handleEndExam = () => {
+    // Handle end exam logic here (e.g., redirect to results page or show a confirmation)
+    alert("The exam has ended. Redirecting to results.");
+    setExamStarted(false); // Optionally reset the examStarted state
   };
 
   return (
@@ -29,18 +24,28 @@ const ExamPage = () => {
         <h1>Exam Center</h1>
         <p>Prepare for your next exam.</p>
       </div>
+
       <div className="exam-info">
         <h2>Mathematics Exam</h2>
         <p><strong>Duration:</strong> 2 hours</p>
         <p><strong>Questions:</strong> 50</p>
         <p><strong>Proctoring:</strong> Enabled</p>
       </div>
-      <button className="exam-button" onClick={handleStartExam}>
-        Start Exam
-      </button>
 
-      {/* Hidden video for testing webcam access */}
-      <video id="exam-video" width="300" height="200" style={{ display: 'none' }} muted></video>
+      {!examStarted ? (
+        <button className="exam-button" onClick={() => setShowModal(true)}>
+          Start Exam
+        </button>
+      ) : (
+        <div>
+          <p className="exam-status">The exam has started. Good luck!</p> 
+          <button className="end-exam-button" onClick={handleEndExam}>
+            End Exam
+          </button>
+        </div>
+      )}
+
+      {showModal && <MediaCheckModal onClose={() => setShowModal(false)} onSuccess={handleMediaCheckComplete} />}
     </div>
   );
 };

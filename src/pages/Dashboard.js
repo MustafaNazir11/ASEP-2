@@ -1,7 +1,15 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom'; // Importing useNavigate hook
 import '../styles/Dashboard.css';
 
 const DashboardPage = () => {
+  const navigate = useNavigate(); // Initialize useNavigate
+
+  // Function to handle Start New Exam button click
+  const handleStartNewExam = () => {
+    navigate('/exam'); // Redirect to the ExamPage
+  };
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -22,7 +30,9 @@ const DashboardPage = () => {
           <p className="stat">2</p>
         </div>
       </div>
-      <button className="dashboard-button">Start New Exam</button>
+      <button className="dashboard-button" onClick={handleStartNewExam}>
+        Start New Exam
+      </button>
     </div>
   );
 };

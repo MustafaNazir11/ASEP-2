@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState('student');
+  const [userType, setUserType] = useState('student'); // 'student' or 'admin'
 
   const navigate = useNavigate();
 
@@ -66,9 +66,12 @@ const LoginPage = () => {
           <button type="submit" className="login-button">Login</button>
         </form>
 
-        <p className="signup-link">
-          Don't have an account? <a href="/signup">Sign up here</a>
-        </p>
+        {/* Conditionally show sign-up link only for students */}
+        {userType !== 'admin' && (
+          <p className="signup-link">
+            Don't have an account? <a href="/signup">Sign up here</a>
+          </p>
+        )}
       </div>
     </div>
   );
