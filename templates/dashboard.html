@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    /* Minimal styles for hidden modal */
+    .hidden { display: none; }
+    .modal {
+      position: fixed;
+      top: 10%;
+      left: 10%;
+      width: 80%;
+      height: 80%;
+      background: white;
+      border: 2px solid #333;
+      z-index: 1000;
+      padding: 10px;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><i class="fa fa-user-shield"></i> Proctor Dashboard</h1>
+    <button id="logoutBtn"><i class="fa fa-sign-out-alt"></i> Logout</button>
+  </header>
+
+  <main>
+    <section class="video-grid">
+      <!-- Video boxes will be dynamically inserted here -->
+    </section>
+
+    <section class="alerts">
+      <h3>Alerts & Logs</h3>
+      <ul id="alertsList">
+        <li><i class="fa fa-exclamation-triangle"></i> Suspicious activity detected at 10:34 AM</li>
+        <li><i class="fa fa-clock"></i> Exam resumed at 10:45 AM</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Detail Modal -->
+  <div id="detailModal" class="modal hidden">
+    <button id="closeModalBtn">Close</button>
+    <h2 id="detailStudentName"></h2>
+    <p><strong>Exam:</strong> <span id="detailExamName"></span></p>
+    <p><strong>Status:</strong> <span id="detailExamStatus"></span></p>
+    <video id="detailVideo" autoplay playsinline controls style="width: 100%; max-height: 60vh;"></video>
+  </div>
+
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

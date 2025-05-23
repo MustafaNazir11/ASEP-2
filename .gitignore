@@ -1,23 +1,41 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
+# Virtual environments
+venv/
+env/
+ENV/
 
-# testing
-/coverage
+# Jupyter Notebooks checkpoints (if any)
+.ipynb_checkpoints
 
-# production
-/build
-
-# misc
+# Logs and temp files
+*.log
+*.tmp
+*.swp
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.pt
+# IDE files
+.vscode/
+.idea/
 
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Flask instance folders
+instance/
+*.db
+*.sqlite3
+
+# Uploaded screenshots (optional if you store them temporarily)
+screenshots/
+temp/
+
+# Environment/config files
+.env
+.env.local
+.env.production
+
+
+

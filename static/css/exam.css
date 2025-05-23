@@ -1,0 +1,205 @@
+/* exam.css */
+
+* {
+  box-sizing: border-box;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(to right, #f8f9fa, #e9ecef);
+  color: #2c3e50;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  background: white;
+  border-bottom: 1.5px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+header h1 {
+  font-weight: 700;
+  font-size: 24px;
+  color: #007BFF;
+  margin: 0;
+}
+
+header button {
+  background-color: #007BFF;
+  border: none;
+  padding: 10px 28px;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 3px 8px rgba(0,123,255,0.4);
+}
+
+header button:hover {
+  background-color: #0056b3;
+}
+
+main.container {
+  margin-top: 70px;
+  margin-bottom: 60px;
+  flex: 1;
+  max-width: 700px;
+  width: 100%;
+  padding: 40px 50px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  background: white;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+
+  /* Center contents vertically and horizontally */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  text-align: center;
+}
+
+.instructions {
+  font-size: 18px;
+  color: #555;
+  font-weight: 500;
+  user-select: none;
+}
+
+.video-box {
+  background: #f4f9ff;
+  border-radius: 14px;
+  box-shadow: 0 5px 20px rgba(0, 123, 255, 0.15);
+  width: 320px;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  transition: box-shadow 0.3s ease;
+}
+
+.video-box:hover {
+  box-shadow: 0 12px 36px rgba(0, 123, 255, 0.3);
+}
+
+video#webcam {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  border: 3px solid #007BFF;
+  background-color: #000;
+  box-shadow: 0 6px 22px rgba(0, 123, 255, 0.35);
+}
+
+.status {
+  font-size: 16px;
+  color: #007BFF;
+  font-weight: 600;
+  user-select: none;
+  margin-top: 10px;
+}
+
+#proceedBtn {
+  background-color: #007BFF;
+  border: none;
+  padding: 14px 48px;
+  color: white;
+  font-weight: 700;
+  font-size: 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,123,255,0.5);
+  transition: background-color 0.3s ease;
+  user-select: none;
+  margin-top: 10px;
+  width: fit-content;
+  min-width: 180px;
+}
+
+#proceedBtn:hover {
+  background-color: #0056b3;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background: #007BFF;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 500;
+  user-select: none;
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.12);
+  z-index: 1000;
+  font-family: 'Inter', sans-serif;
+}
+
+main.container::-webkit-scrollbar {
+  width: 8px;
+}
+
+main.container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+main.container::-webkit-scrollbar-thumb {
+  background-color: #007BFF;
+  border-radius: 10px;
+  border: 2px solid #f1f1f1;
+}
+
+@media (max-width: 700px) {
+  main.container {
+    padding: 30px 25px;
+    max-width: 100%;
+  }
+
+  header {
+    padding: 0 20px;
+  }
+
+  header h1 {
+    font-size: 20px;
+  }
+
+  header button {
+    padding: 8px 20px;
+  }
+
+  #proceedBtn {
+    padding: 12px 32px;
+    font-size: 16px;
+    min-width: 150px;
+  }
+
+  .video-box {
+    width: 280px;
+    padding: 15px;
+  }
+}

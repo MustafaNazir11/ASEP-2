@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Exam Page</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/exam.css') }}">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
+</head>
+<body>
+  <header>
+    <h1>Exam Page (Student)</h1>
+  </header>
+
+  <main class="container">
+    <p class="instructions">Click <strong>Start Exam</strong> to begin. Your camera will turn on automatically.</p>
+    <div class="video-box">
+      <video id="webcam" autoplay playsinline muted></video>
+    </div>
+    <p class="status">Monitoring will start when you proceed.</p>
+    <button id="proceedBtn">Start Exam</button>
+  </main>
+
+  <footer>
+    &copy; 2025 AI Proctoring System. All rights reserved.
+  </footer>
+
+  <!-- PeerJS CDN -->
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <script src="{{ url_for('static', filename='js/exam.js') }}"></script>
+</body>
+</html>
