@@ -53,5 +53,5 @@ python app.py
 ```
 #### To view screenshot of cheating detected
 ```
-127.0.0.1:5000/screenshots
+127.0.0.1:5000/view_screenshots
 ```
