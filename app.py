@@ -10,9 +10,9 @@ CORS(app)
 peer_ids = []
 
 # Load the YOLOv8 model once at startup
-model = YOLO("yolov8n.pt")  # Use 'yolov8n.pt' or your custom model
+model = YOLO("yolov8m.pt")  # Pretrained on COCO
 
-SUSPICIOUS_CLASSES = {"cell phone"}  # Adjust based on your use case
+SUSPICIOUS_CLASSES = {"cell phone"}  # Class name from COCO
 
 @app.route("/exam")
 def exam():
@@ -46,34 +46,37 @@ def upload_screenshot():
 
     if image_data:
         image_data = image_data.split(",")[1]
-        screenshots_folder = os.path.join(os.path.dirname(__file__), "screenshots")
+
+        screenshots_folder = os.path.join(app.static_folder, "screenshots")
         os.makedirs(screenshots_folder, exist_ok=True)
 
-        # Save image in screenshots folder
         filename = f"screenshot_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
         image_path = os.path.join(screenshots_folder, filename)
+
         with open(image_path, "wb") as f:
             f.write(base64.b64decode(image_data))
 
-        # Load image for YOLO
         frame = cv2.imread(image_path)
         results = model(frame, verbose=False)
 
-        # Check for suspicious classes
         suspicious = False
         for result in results:
-            boxes = result.boxes
-            if boxes is not None:
-                for cls_idx in boxes.cls:
-                    class_name = model.names[int(cls_idx.item())]
-                    if class_name in SUSPICIOUS_CLASSES:
-                        suspicious = True
-                        break
-            if suspicious:
-                break
+            for box in result.boxes:
+                cls_id = int(box.cls[0])
+                label = model.names[cls_id]
+                if label in SUSPICIOUS_CLASSES:
+                    suspicious = True
+                    # Draw bounding box
+                    xyxy = box.xyxy[0].cpu().numpy().astype(int)
+                    cv2.rectangle(frame, (xyxy[0], xyxy[1]), (xyxy[2], xyxy[3]), (0, 0, 255), 2)
+                    cv2.putText(frame, label, (xyxy[0], xyxy[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
 
         if suspicious:
-            return jsonify({"message": "Suspicious activity detected and saved", "filename": filename})
+            cv2.imwrite(image_path, frame)  # Save image with bounding boxes
+            return jsonify({
+                "message": "Suspicious activity detected and saved",
+                "filename": f"/static/screenshots/{filename}"
+            })
         else:
             os.remove(image_path)
             return jsonify({"message": "No suspicion detected. Screenshot deleted."})
@@ -81,21 +84,25 @@ def upload_screenshot():
     return jsonify({"message": "No image data received"}), 400
 
 
-@app.route("/screenshots")
+@app.route("/view_screenshots")
 def view_screenshots():
-    screenshot_folder = os.path.join(os.path.dirname(__file__), "screenshots")
-    os.makedirs(screenshot_folder, exist_ok=True)
-    files = os.listdir(screenshot_folder)
-    images = [f"/screenshots/{file}" for file in files if file.endswith(".png")]
+    screenshots_folder = os.path.join(app.static_folder, "screenshots")
+    os.makedirs(screenshots_folder, exist_ok=True)
 
-    html = "<h1>Suspicious Screenshots</h1>"
+    files = os.listdir(screenshots_folder)
+    images = [f"/static/screenshots/{file}" for file in files if file.endswith(".png")]
+
+    html = "<h1>Suspicious Screenshots</h1><div style='display:flex; flex-wrap: wrap;'>"
     for img in images:
-        html += f'<div><img src="{img}" width="300"><p>{img}</p></div>'
+        html += f'''
+        <div style="margin: 10px;">
+            <img src="{img}" width="300" style="border:1px solid #ccc;"/><br>
+            <p>{img}</p>
+        </div>
+        '''
+    html += "</div>"
     return html
 
-@app.route("/screenshots/<path:filename>")
-def serve_screenshot_file(filename):
-    return send_from_directory("screenshots", filename)
 
 if __name__ == "__main__":
     app.run(debug=True)
