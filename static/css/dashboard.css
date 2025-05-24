@@ -10,7 +10,7 @@ body, html {
   font-family: 'Inter', sans-serif;
   background: linear-gradient(to right, #f8f9fa, #e9ecef);
   color: #2c3e50;
-  overflow: hidden; /* Prevent double scroll */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -57,9 +57,9 @@ header button:hover {
 }
 
 /* Main content */
-main.container {
-  margin-top: 70px; /* height of fixed header */
-  margin-bottom: 60px; /* optional footer height */
+main {
+  margin-top: 70px;
+  margin-bottom: 60px;
   flex: 1;
   max-width: 1000px;
   width: 100%;
@@ -72,6 +72,7 @@ main.container {
   display: grid;
   grid-template-columns: 2fr 1fr;
   grid-gap: 50px;
+  padding-top: 70px;
 }
 
 /* Video grid */
@@ -80,7 +81,7 @@ main.container {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 30px;
   overflow-y: auto;
-  max-height: calc(100vh - 180px); /* header + padding */
+  max-height: calc(100vh - 180px);
   padding-right: 10px;
 }
 
@@ -118,12 +119,13 @@ main.container {
 /* Video styling */
 .video-box video {
   width: 100%;
+  height: auto;
   aspect-ratio: 16 / 9;
   border-radius: 16px;
   border: 3px solid #007BFF;
   background-color: #000;
   box-shadow: 0 6px 22px rgba(0, 123, 255, 0.35);
-  pointer-events: none; /* prevent accidental interaction */
+  pointer-events: none;
 }
 
 /* Alerts section */
@@ -144,7 +146,7 @@ main.container {
   max-height: calc(100vh - 180px);
 }
 
-.alerts h2 {
+.alerts h3 {
   font-weight: 800;
   color: #004080;
   margin-bottom: 28px;
@@ -187,82 +189,59 @@ main.container {
   flex-shrink: 0;
 }
 
-/* Modal styles for detailed student view */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(44, 62, 80, 0.75);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1500;
-}
-
-.modal.hidden {
-  display: none;
-}
-
-.modal-content {
-  background: white;
-  padding: 30px 40px;
-  border-radius: 12px;
-  max-width: 700px;
-  width: 90%;
-  box-shadow: 0 8px 28px rgba(0, 123, 255, 0.25);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-}
-
+/* Modal styles */
 .modal-content video {
   width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: 14px;
   border: 3px solid #007BFF;
   background-color: #000;
-  margin-bottom: 25px;
+  margin-bottom: 15px;
   box-shadow: 0 6px 22px rgba(0, 123, 255, 0.35);
+  pointer-events: none;
 }
 
-.student-info {
+.modal-alerts {
+  margin-top: 15px;
   width: 100%;
-  font-size: 16px;
-  color: #2c3e50;
+  max-height: 150px;
+  overflow-y: auto;
+  border-top: 2px solid #007BFF;
+  padding-top: 15px;
+  color: #004080;
   font-weight: 600;
-  display: flex;
-  justify-content: space-between;
+  font-size: 16px;
 }
 
-.student-info p {
+.modal-alerts h3 {
+  margin: 0 0 12px 0;
+  font-weight: 700;
+  color: #007BFF;
+}
+
+.modal-alerts ul {
+  list-style: none;
+  padding: 0;
   margin: 0;
 }
 
-/* Close button */
-#closeModalBtn {
-  position: absolute;
-  top: 12px;
-  right: 18px;
-  background: transparent;
-  border: none;
-  font-size: 28px;
-  color: #007BFF;
-  cursor: pointer;
-  font-weight: 700;
-  line-height: 1;
-  transition: color 0.3s ease;
+.modal-alerts ul li {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-#closeModalBtn:hover {
-  color: #0056b3;
+.modal-alerts ul li i {
+  font-style: normal;
+  font-size: 20px;
+  color: #007BFF;
+  flex-shrink: 0;
 }
 
 /* Responsive adjustments */
 @media (max-width: 900px) {
-  main.container {
+  main {
     grid-template-columns: 1fr;
     padding: 30px 25px;
     margin-bottom: 70px;
@@ -292,8 +271,4 @@ main.container {
   .video-grid {
     grid-template-columns: 1fr;
   }
-}
-
-main {
-  padding-top: 70px; /* header height */
 }

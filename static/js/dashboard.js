@@ -1,5 +1,7 @@
 const videoGrid = document.querySelector(".video-grid");
 const alertsList = document.getElementById("alertsList");
+const startMonitoringBtn = document.getElementById("startMonitoringBtn");
+
 const detailModal = document.getElementById("detailModal");
 const closeModalBtn = document.getElementById("closeModalBtn");
 const detailVideo = document.getElementById("detailVideo");
@@ -7,111 +9,173 @@ const detailStudentName = document.getElementById("detailStudentName");
 const detailExamName = document.getElementById("detailExamName");
 const detailExamStatus = document.getElementById("detailExamStatus");
 
-const peer = new Peer({
-  host: "0.peerjs.com",
-  port: 443,
-  secure: true,
-});
+let peer;
+let currentCall = null;
 
-const studentStreams = new Map();
-const studentInfoMap = new Map();
+function getDummyStream() {
+  const ctx = new AudioContext();
+  const oscillator = ctx.createOscillator();
+  const dst = oscillator.connect(ctx.createMediaStreamDestination());
+  oscillator.start();
+  console.log("[DummyStream] Created silent audio stream for call initiation");
+  return dst.stream;
+}
 
-peer.on("open", (adminPeerId) => {
-  console.log("Admin Peer ID:", adminPeerId);
+startMonitoringBtn.addEventListener("click", () => {
+  startMonitoringBtn.disabled = true;
+  console.log("[Monitoring] Start Monitoring button clicked, initializing PeerJS admin peer...");
 
-  fetch("http://127.0.0.1:5000/get-peer-ids")
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-      return res.json();
-    })
-    .then(peerIds => {
-      console.log("Fetched peer IDs:", peerIds);
+  peer = new Peer({
+    host: "0.peerjs.com",
+    port: 443,
+    secure: true,
+  });
 
-      peerIds.forEach((peerId, index) => {
-        console.log("Calling peer:", peerId);
-        const call = peer.call(peerId);
+  peer.on("open", (adminPeerId) => {
+    console.log(`[PeerJS] Admin Peer connected with ID: ${adminPeerId}`);
 
-        if (!call) {
-          console.warn(`Failed to call peer ${peerId}`);
-          addAlert(`Failed to call peer ${peerId}`);
+    fetch(`${window.location.origin}/get-peer-ids`)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+        return res.json();
+      })
+      .then(peerIds => {
+        console.log(`[Fetch] Retrieved student peer IDs:`, peerIds);
+
+        if (peerIds.length === 0) {
+          addAlert("[Alert] No student peers connected yet.");
+          console.warn("[Warning] No student peers found to call.");
           return;
         }
 
-        const student = {
-          id: peerId,
-          name: `Student ${index + 1}`,
-          exam: "Unknown",
-          status: "In Progress"
-        };
-        studentInfoMap.set(peerId, student);
+        const dummyStream = getDummyStream();
 
-        call.on("stream", (stream) => {
-          studentStreams.set(peerId, stream);
-          addOrUpdateVideoBox(student, stream);
-        });
+        peerIds.forEach((studentPeerId) => {
+          console.log(`[Call] Initiating call to student peer: ${studentPeerId}`);
+          const call = peer.call(studentPeerId, dummyStream);
 
-        call.on("error", (err) => {
-          addAlert(`Error with ${student.name}: ${err.message}`);
+          if (!call) {
+            console.error(`[Call] Failed to initiate call with student: ${studentPeerId}`);
+            addAlert(`[Error] Failed to call student peer ${studentPeerId}`);
+            return;
+          }
+
+          call.on("stream", (stream) => {
+            console.log(`[Stream] Received remote stream from student ${studentPeerId} with ${stream.getTracks().length} track(s)`);
+            addOrUpdateVideoBox(studentPeerId, stream);
+          });
+
+          call.on("close", () => {
+            console.log(`[Call] Call closed by student: ${studentPeerId}`);
+            removeVideoBox(studentPeerId);
+          });
+
+          call.on("error", (err) => {
+            console.error(`[Call] Error during call with student ${studentPeerId}:`, err);
+            addAlert(`[Error] Call error with ${studentPeerId}: ${err.message}`);
+          });
         });
+      })
+      .catch(err => {
+        console.error("[Fetch] Error fetching peer IDs from backend:", err);
+        addAlert("[Error] Failed to fetch student peer IDs from server.");
       });
-    })
-    .catch(err => {
-      console.error("Error fetching peer IDs from server:", err);
-      addAlert("Error fetching peer IDs from server");
-    });
+  });
+
+  peer.on("error", (err) => {
+    console.error("[PeerJS] PeerJS error:", err);
+    addAlert(`[Error] PeerJS Error: ${err.type}`);
+  });
 });
 
-function addOrUpdateVideoBox(student, stream) {
-  let videoBox = document.querySelector(`.video-box[data-peer-id="${student.id}"]`);
+function addOrUpdateVideoBox(peerId, stream) {
+  let videoBox = document.querySelector(`.video-box[data-peer-id="${peerId}"]`);
 
   if (!videoBox) {
     videoBox = document.createElement("div");
     videoBox.classList.add("video-box");
-    videoBox.dataset.peerId = student.id;
+    videoBox.dataset.peerId = peerId;
 
     const title = document.createElement("h3");
-    title.textContent = student.name;
+    title.textContent = `Student (${peerId.slice(0, 6)}...)`;
     videoBox.appendChild(title);
 
     const videoElem = document.createElement("video");
     videoElem.autoplay = true;
     videoElem.playsInline = true;
     videoElem.muted = true;
-    videoBox.appendChild(videoElem);
+    videoElem.srcObject = stream;
 
+    videoElem.onloadedmetadata = () => {
+      console.log(`[Video] Metadata loaded for student ${peerId}, playing video...`);
+      videoElem.play().then(() => {
+        console.log(`[Video] Playing video stream for student ${peerId}`);
+      }).catch(err => {
+        console.warn(`[Video] Could not autoplay video for student ${peerId}:`, err);
+      });
+    };
+
+    videoBox.appendChild(videoElem);
+    videoBox.addEventListener("click", () => openDetailModal(peerId));
     videoGrid.appendChild(videoBox);
 
-    videoBox.addEventListener("click", () => openDetailModal(student.id));
+    console.log(`[UI] Added video box for student peer: ${peerId}`);
+  } else {
+    const videoElem = videoBox.querySelector("video");
+    if (videoElem.srcObject !== stream) {
+      videoElem.srcObject = stream;
+      videoElem.onloadedmetadata = () => {
+        console.log(`[Video] Metadata loaded (update) for student ${peerId}, playing video...`);
+        videoElem.play().catch(err => {
+          console.warn(`[Video] Could not autoplay updated video for student ${peerId}:`, err);
+        });
+      };
+    }
   }
+}
 
-  const videoElem = videoBox.querySelector("video");
-  if (videoElem.srcObject !== stream) {
-    videoElem.srcObject = stream;
+function removeVideoBox(peerId) {
+  const videoBox = document.querySelector(`.video-box[data-peer-id="${peerId}"]`);
+  if (videoBox) {
+    videoBox.remove();
+    console.log(`[UI] Removed video box for student peer: ${peerId}`);
   }
 }
 
 function openDetailModal(peerId) {
-  const student = studentInfoMap.get(peerId);
-  if (!student) return;
+  console.log(`[Modal] Opening detail modal for student peer: ${peerId}`);
+  detailStudentName.textContent = `Student (${peerId})`;
+  detailExamName.textContent = "Unknown";
+  detailExamStatus.textContent = "In Progress";
 
-  detailStudentName.textContent = student.name;
-  detailExamName.textContent = student.exam;
-  detailExamStatus.textContent = student.status;
-
-  const stream = studentStreams.get(peerId);
-  if (stream) {
-    detailVideo.srcObject = stream;
+  const videoBox = document.querySelector(`.video-box[data-peer-id="${peerId}"]`);
+  if (videoBox) {
+    const videoElem = videoBox.querySelector("video");
+    if (videoElem) {
+      detailVideo.srcObject = videoElem.srcObject;
+      detailVideo.onloadedmetadata = () => {
+        console.log(`[Modal Video] Metadata loaded for student ${peerId}, playing detail video...`);
+        detailVideo.play().then(() => {
+          console.log(`[Modal Video] Playing detail video for student ${peerId}`);
+        }).catch(err => {
+          console.warn(`[Modal Video] Could not autoplay detail video for student ${peerId}:`, err);
+        });
+      };
+    }
   }
 
   detailModal.classList.remove("hidden");
 }
 
 closeModalBtn.addEventListener("click", () => {
+  console.log("[Modal] Closing detail modal");
   detailModal.classList.add("hidden");
+  detailVideo.pause();
   detailVideo.srcObject = null;
 });
 
 function addAlert(message) {
+  console.log(`[Alert] ${message}`);
   const li = document.createElement("li");
   li.innerHTML = `<i class="fa fa-exclamation-triangle"></i> ${message}`;
   alertsList.prepend(li);
