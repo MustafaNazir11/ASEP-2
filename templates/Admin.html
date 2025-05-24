@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - ProctorExam</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+ 
+  
+</head>
+<body>
+  <div class="dashboard">
+    <aside class="sidebar">
+      <div class="brand">
+        <i class="fas fa-graduation-cap"></i>
+        <span>Proctor<span class="highlight">Exam</span></span>
+      </div>
+
+      <div class="profile-upload">
+        <img src="https://via.placeholder.com/100" alt="Profile" id="profile-preview" />
+        <input type="file" id="profile-photo" accept="image/*" />
+        <label for="profile-photo">Upload Photo</label>
+      </div>
+
+      <nav class="menu">
+        <a href="Admin.html"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="#"><i class="fas fa-upload"></i> Upload Test</a>
+        <a href="#"><i class="fas fa-desktop"></i> Monitor Exams</a>
+        <a href="instruction.html"><i class="fas fa-info-circle"></i> Instructions</a>
+        <a href="#"><i class="fas fa-cogs"></i> Settings</a>
+      </nav>
+
+      <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </aside>
+
+    <main class="main-content">
+      <header class="main-header">
+        <h1>Admin Dashboard</h1>
+        <div class="actions">
+          <button class="btn-primary">Upload Test</button>
+          <button class="btn-secondary">Monitor Exams</button>
+        </div>
+      </header>
+
+      <section class="stats">
+        <div class="card">
+          <h3><i class="fas fa-bolt"></i> Active Exams</h3>
+          <p>Live data from backend</p>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-user-graduate"></i> Total Students</h3>
+          <p>Dynamic user count</p>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-shield-alt"></i> Suspicious Activities</h3>
+          <p>Tracked via AI model</p>
+        </div>
+      </section>
+
+      <section class="features">
+        <div class="card feature">
+          <h2>Upload Test</h2>
+          <p>Create and upload exams with proctoring configuration, duration, and start time.</p>
+          <button class="btn-primary">Go to Upload</button>
+        </div>
+        <div class="card feature">
+          <h2>Monitor Exams</h2>
+          <p>Watch ongoing exams, detect suspicious behavior, and intervene if needed.</p>
+          <button class="btn-secondary">Go to Monitoring</button>
+        </div>
+      </section>
+
+      <section class="dashboard-info">
+        <h2>System Notifications</h2>
+        <ul>
+          <li>New exam templates are now available under "Upload Test".</li>
+          <li>Real-time monitoring powered by YOLOv8 active in ongoing sessions.</li>
+          <li>Email alerts enabled for flagged behaviors.</li>
+        </ul>
+      </section>
+
+      <section class="about-system">
+        <h2>About This System</h2>
+        <p>This online proctoring system is designed to maintain academic integrity in online examinations. It allows administrators to create and assign tests to students, and monitor them in real-time using advanced AI models such as YOLOv8. The system flags suspicious behaviors, provides live video feeds, and stores activity logs. With email notifications and performance analytics, it ensures a secure and transparent exam environment.</p>
+      </section>
+    </main>
+  </div>
+
+
+  <script>    
+  document.getElementById('profile-photo').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          document.getElementById('profile-preview').src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', function () {
+      alert("You have been logged out.");
+      window.location.href = "/login.html";
+    });
+
+    </script>
+
+</body>
+</html>

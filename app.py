@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_cors import CORS
 import os, base64, cv2
 from datetime import datetime
@@ -16,6 +16,9 @@ SUSPICIOUS_CLASSES = {"cell phone", "laptop", "book", 'mobile phone'}
 # Load OpenCV's built-in face detector
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
+@app.route("/")
+def index():
+    return redirect(url_for("login"))
 
 @app.route("/exam")
 def exam():
@@ -26,6 +29,9 @@ def exam():
 def login():
     return render_template("login.html")
 
+@app.route("/admin")
+def admin():
+    return render_template("Admin.html")
 
 @app.route("/dashboard")
 def dashboard():

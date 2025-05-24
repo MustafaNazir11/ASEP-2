@@ -56,9 +56,9 @@
       const studentCreds = { username: 'student', password: 'student123' };
 
       if (role === 'admin' && username === adminCreds.username && password === adminCreds.password) {
-        window.location.href = 'dashboard.html';
+        window.location.href = '/admin';
       } else if (role === 'student' && username === studentCreds.username && password === studentCreds.password) {
-        window.location.href = 'exam.html';
+        window.location.href = '/exam';
       } else {
         document.getElementById('login-error').innerText = 'Invalid credentials or role selected.';
       }
