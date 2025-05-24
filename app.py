@@ -11,7 +11,7 @@ peer_ids = set()
 model = YOLO("yolov8m.pt")  # COCO-pretrained model
 
 # Extended suspicious classes
-SUSPICIOUS_CLASSES = {"cell phone", "laptop", "book", "tv", "handbag"}
+SUSPICIOUS_CLASSES = {"cell phone", "laptop", "book", 'mobile phone'}
 
 # Load OpenCV's built-in face detector
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
