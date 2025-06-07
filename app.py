@@ -3,17 +3,23 @@ from flask_cors import CORS
 import os, base64, cv2
 from datetime import datetime
 from ultralytics import YOLO
+import cloudinary
+import cloudinary.uploader
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
 
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name="dtjblppq9",
+    api_key="426758186571426",
+    api_secret="d-0RsZFh_3MMPlnIrIkP89wVAew"
+)
+
 peer_ids = set()
 model = YOLO("yolov8m.pt")  # COCO-pretrained model
 
-# Extended suspicious classes
-SUSPICIOUS_CLASSES = {"cell phone", "laptop", "book", 'mobile phone'}
-
-# Load OpenCV's built-in face detector
+SUSPICIOUS_CLASSES = {"cell phone", "laptop", "book", "mobile phone"}
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
 @app.route("/")
@@ -23,7 +29,6 @@ def index():
 @app.route("/exam")
 def exam():
     return render_template("exam.html")
-
 
 @app.route("/login")
 def login():
@@ -37,7 +42,6 @@ def admin():
 def dashboard():
     return render_template("dashboard.html")
 
-
 @app.route("/store-peer-id", methods=["POST"])
 def store_peer_id():
     data = request.json
@@ -47,11 +51,9 @@ def store_peer_id():
         return jsonify({"message": "Peer ID stored", "peerId": peer_id})
     return jsonify({"message": "Peer ID missing or duplicate"}), 400
 
-
 @app.route("/get-peer-ids")
 def get_peer_ids():
     return jsonify(list(peer_ids))
-
 
 @app.route("/delete-peer-id", methods=["POST"])
 def delete_peer_id():
@@ -61,7 +63,6 @@ def delete_peer_id():
         peer_ids.remove(peer_id)
         return jsonify({"message": "Peer ID deleted", "peerId": peer_id})
     return jsonify({"message": "Peer ID not found"}), 404
-
 
 @app.route("/upload-screenshot", methods=["POST"])
 def upload_screenshot():
@@ -86,7 +87,6 @@ def upload_screenshot():
         suspicious = False
         reasons = []
 
-        # YOLO detection
         results = model(frame, verbose=False)
         person_count = 0
 
@@ -96,11 +96,9 @@ def upload_screenshot():
                 label = model.names[cls_id]
                 conf = float(box.conf[0])
 
-                # Count persons
                 if label == "person" and conf > 0.5:
                     person_count += 1
 
-                # Flag suspicious objects
                 if label in SUSPICIOUS_CLASSES and conf > 0.5:
                     suspicious = True
                     reasons.append(f"{label} detected")
@@ -110,12 +108,10 @@ def upload_screenshot():
                     cv2.putText(frame, label, (xyxy[0], xyxy[1] - 10),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
 
-        # Person count check
         if person_count > 1:
             suspicious = True
             reasons.append("Multiple people detected")
 
-        # Face detection using Haar cascades
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
         if len(faces) == 0:
@@ -125,7 +121,6 @@ def upload_screenshot():
             for (x, y, w, h) in faces:
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
 
-        # Brightness detection (simple method)
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         brightness = hsv[:, :, 2].mean()
         if brightness > 200:
@@ -134,17 +129,27 @@ def upload_screenshot():
 
         if suspicious:
             cv2.imwrite(image_path, frame)
-            return jsonify({
-                "message": "Suspicious activity detected",
-                "filename": f"/static/screenshots/{filename}",
-                "reasons": reasons
-            })
+            try:
+                upload_result = cloudinary.uploader.upload(image_path, folder="exam_proctoring")
+                os.remove(image_path)
+
+                return jsonify({
+                    "message": "Suspicious activity detected",
+                    "cloudinary_url": upload_result.get("secure_url"),
+                    "public_id": upload_result.get("public_id"),
+                    "reasons": reasons
+                })
+            except Exception as e:
+                return jsonify({
+                    "message": "Suspicious activity detected, but upload to Cloudinary failed",
+                    "error": str(e),
+                    "reasons": reasons
+                }), 500
         else:
             os.remove(image_path)
             return jsonify({"message": "No suspicion detected. Screenshot deleted."})
 
     return jsonify({"message": "No image data received"}), 400
-
 
 @app.route("/view_screenshots")
 def view_screenshots():
@@ -163,7 +168,6 @@ def view_screenshots():
         '''
     html += "</div>"
     return html
-
 
 if __name__ == "__main__":
     app.run(debug=True)
