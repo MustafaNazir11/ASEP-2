@@ -5,65 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login - AI Proctoring System</title>
 
-  <!-- FIXED CSS LINK -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Glassmorphism CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
 <body>
-  <div class="login-wrapper">
-    <div class="login-container">
-      <h2>Welcome Back</h2>
-      <p class="subtitle">Login to your AI Proctoring dashboard</p>
-
-      <form id="login-form">
-        <div class="form-group">
-          <label for="username"><i class="fa fa-user icon"></i>Username</label>
-          <input type="text" id="username" name="username" placeholder="Enter your username" required />
-        </div>
-
-        <div class="form-group">
-          <label for="password"><i class="fa fa-lock icon"></i>Password</label>
-          <input type="password" id="password" name="password" placeholder="Enter your password" required />
-        </div>
-
-        <div class="form-group">
-          <label for="role"><i class="fa fa-user-tag icon"></i>Role</label>
-          <select id="role" name="role" required>
-            <option value="">Select your role</option>
-            <option value="student">Student</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
-
-        <button type="submit">Login</button>
-      </form>
-
-      <p id="login-error" class="error"></p>
-    </div>
+  <div class="background">
+    <div class="shape"></div>
+    <div class="shape"></div>
   </div>
+  <form id="login-form">
+    <h3>Login Here</h3>
 
-  <script>
-    document.getElementById('login-form').addEventListener('submit', function (e) {
-      e.preventDefault();
+    <label for="username">Username</label>
+    <input type="text" placeholder="Email or Phone" id="username" name="username" required>
 
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const role = document.getElementById('role').value;
+    <label for="password">Password</label>
+    <input type="password" placeholder="Password" id="password" name="password" required>
 
-      const adminCreds = { username: 'admin', password: 'admin123' };
-      const studentCreds = { username: 'student', password: 'student123' };
+    <label for="role">Role</label>
+    <select id="role" name="role" required>
+      <option value="">Select your role</option>
+      <option value="student">Student</option>
+      <option value="admin">Admin</option>
+    </select>
 
-      if (role === 'admin' && username === adminCreds.username && password === adminCreds.password) {
-        window.location.href = '/admin';
-      } else if (role === 'student' && username === studentCreds.username && password === studentCreds.password) {
-        window.location.href = '/exam';
-      } else {
-        document.getElementById('login-error').innerText = 'Invalid credentials or role selected.';
-      }
-    });
-  </script>
-  <script src="../js/login.js" defer></script>
+    <button type="submit">Log In</button>
+    <p id="login-error" class="error"></p>
+    <div class="social">
+      <div class="go"><i class="fab fa-google"></i>  Google</div>
+      <div class="fb"><i class="fab fa-facebook"></i>  Facebook</div>
+    </div>
+  </form>
+
+  <script src="{{ url_for('static', filename='js/login.js') }}" defer></script>
 </body>
 </html>

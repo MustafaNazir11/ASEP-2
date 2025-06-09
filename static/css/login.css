@@ -1,127 +1,116 @@
-:root {
-  --primary-color: #007BFF;
-  --primary-hover: #0056b3;
-  --background-gradient: linear-gradient(135deg, #f2f7ff, #dee9ff);
-  --card-glass: rgba(255, 255, 255, 0.25);
-  --card-border: rgba(255, 255, 255, 0.2);
-  --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  --border-radius: 16px;
-  --input-border: #d3d3d3;
-  --input-focus: var(--primary-color);
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
+*,
+*:before,
+*:after {
   padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
-
 body {
-  font-family: "Inter", sans-serif;
-  background: var(--background-gradient);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  overflow: hidden;
+  background-color: #080710;
+  font-family: 'Poppins', sans-serif;
 }
-
-.login-wrapper {
-  padding: 20px;
-  width: 100%;
-  max-width: 420px;
+.background {
+  width: 430px;
+  height: 520px;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: 50%;
 }
-
-.login-container {
-  background: var(--card-glass);
-  backdrop-filter: blur(15px);
-  border: 1px solid var(--card-border);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  padding: 40px;
-  text-align: center;
+.background .shape {
+  height: 200px;
+  width: 200px;
+  position: absolute;
+  border-radius: 50%;
 }
-
-h2 {
-  font-size: 28px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin-bottom: 8px;
+.shape:first-child {
+  background: linear-gradient(#1845ad, #23a2f6);
+  left: -80px;
+  top: -80px;
 }
-
-.subtitle {
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 30px;
+.shape:last-child {
+  background: linear-gradient(to right, #ff512f, #f09819);
+  right: -30px;
+  bottom: -80px;
 }
-
-.form-group {
-  text-align: left;
-  margin-bottom: 20px;
-}
-
-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
-  display: flex;
-  align-items: center;
-  margin-bottom: 6px;
-}
-
-.icon {
-  margin-right: 8px;
-  color: var(--primary-color);
-}
-
-input {
-  width: 100%;
-  padding: 12px;
-  font-size: 15px;
-  border: 1px solid var(--input-border);
+form {
+  height: 550px;
+  width: 400px;
+  background-color: rgba(255, 255, 255, 0.13);
+  position: absolute;
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
   border-radius: 10px;
-  transition: border 0.3s ease, box-shadow 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 40px rgba(8, 7, 16, 0.6);
+  padding: 50px 35px;
 }
-
-input:focus {
-  border-color: var(--input-focus);
+form * {
+  color: #ffffff;
+  letter-spacing: 0.5px;
   outline: none;
-  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
-}
-
-button {
-  margin-top: 15px;
-  width: 100%;
-  padding: 14px;
-  background-color: var(--primary-color);
-  color: white;
-  font-weight: 600;
-  font-size: 16px;
   border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
 }
-
-button:hover {
-  background-color: var(--primary-hover);
-  transform: translateY(-2px);
-}
-
-.error {
-  color: #e63946;
-  margin-top: 15px;
-  font-size: 14px;
+form h3 {
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 42px;
   text-align: center;
 }
-
-select {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+label {
+  display: block;
+  margin-top: 20px;
   font-size: 16px;
-  background-color: white;
+  font-weight: 500;
 }
-
+input, select {
+  display: block;
+  height: 50px;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.07);
+  border-radius: 3px;
+  padding: 0 10px;
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 300;
+  color: #fff;
+}
+::placeholder {
+  color: #e5e5e5;
+}
+button {
+  margin-top: 30px;
+  width: 100%;
+  background-color: #ffffff;
+  color: #080710;
+  padding: 15px 0;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.social {
+  margin-top: 25px;
+  display: flex;
+  justify-content: space-between;
+}
+.social div {
+  width: 48%;
+  border-radius: 3px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.27);
+  color: #eaf0fb;
+  text-align: center;
+  cursor: pointer;
+}
+.social div:hover {
+  background-color: rgba(255, 255, 255, 0.47);
+}
+.error {
+  color: red;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 10px;
+}
