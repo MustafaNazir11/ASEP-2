@@ -106,7 +106,7 @@ main {
 }
 
 .video-box h3 {
-  margin: 0 0 15px;
+  margin: 0 0 10px;
   font-weight: 700;
   color: #007BFF;
   font-size: 18px;
@@ -114,6 +114,14 @@ main {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+}
+
+.video-box p {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+  text-align: center;
 }
 
 /* Video styling */

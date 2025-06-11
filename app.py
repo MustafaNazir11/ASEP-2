@@ -11,9 +11,9 @@ CORS(app)
 
 # Configure Cloudinary
 cloudinary.config(
-    cloud_name="dtjblppq9",
-    api_key="426758186571426",
-    api_secret="d-0RsZFh_3MMPlnIrIkP89wVAew"
+    cloud_name="dmbhhqmxf",
+    api_key="267234471199724",
+    api_secret="hZc5Bh9SR7LSL4Fy3tNAZsOhDbY",
 )
 
 peer_ids = set()

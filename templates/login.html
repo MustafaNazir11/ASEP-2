@@ -153,9 +153,9 @@ const firebaseConfig = {
           
           // Redirect based on role (you would verify this in your backend)
           if (role === 'admin') {
-            window.location.href = '/admin-dashboard';
+            window.location.href = '/admin';
           } else {
-            window.location.href = '/dashboard';
+            window.location.href = '/exam';
           }
         } catch (error) {
           console.error('Login error:', error);
