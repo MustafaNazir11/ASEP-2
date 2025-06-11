@@ -36,7 +36,7 @@ def login():
 
 @app.route("/admin")
 def admin():
-    return render_template("Admin.html")
+    return render_template("admin-dashboard.html")
 
 @app.route("/dashboard")
 def dashboard():
