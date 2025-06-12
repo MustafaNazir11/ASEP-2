@@ -17,15 +17,13 @@ document.addEventListener('DOMContentLoaded', function () {
         questionBlocks.forEach((block, i) => {
             block.classList.remove('active');
             if (i === index) {
-                setTimeout(() => {
-                    block.classList.add('active');
-                }, 10);
+                setTimeout(() => block.classList.add('active'), 10);
             }
         });
 
-        prevBtn.style.display = index > 0 ? 'flex' : 'none';
-        nextBtn.style.display = index < totalQuestions - 1 ? 'flex' : 'none';
-        submitBtn.style.display = index === totalQuestions - 1 ? 'flex' : 'none';
+        prevBtn.style.display = index > 0 ? 'inline-block' : 'none';
+        nextBtn.style.display = index < totalQuestions - 1 ? 'inline-block' : 'none';
+        submitBtn.style.display = index === totalQuestions - 1 ? 'inline-block' : 'none';
 
         const progress = ((index + 1) / totalQuestions) * 100;
         progressBar.style.width = `${progress}%`;
@@ -60,74 +58,95 @@ document.addEventListener('DOMContentLoaded', function () {
                 opt.style.borderColor = '';
             });
             this.style.backgroundColor = 'rgba(74, 107, 255, 0.1)';
-            this.style.borderColor = 'var(--primary-color)';
+            this.style.borderColor = 'var(--primary)';
         });
     });
 
-    document.getElementById('quiz-form').addEventListener('submit', function (e) {
+    document.getElementById('quiz-form').addEventListener('submit', function () {
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
         submitBtn.disabled = true;
     });
 
     showQuestion(current);
 
-    // ===================== BACKGROUND PROCTORING LOGIC =====================
+    // ===================== PROCTORING LOGIC =====================
     const video = document.getElementById("webcam");
     const violationDisplay = document.getElementById("violationDisplay");
     const examEnded = document.getElementById("examEnded");
+    const quizContainer = document.querySelector(".quiz-container");
     let violationCount = 0;
     let peerId = null;
 
-    // 🎥 Access camera silently
+    // 🎥 Start webcam silently
     navigator.mediaDevices.getUserMedia({ video: true })
-        .then((stream) => {
+        .then(stream => {
             video.srcObject = stream;
         })
         .catch(() => {
-            alert("Camera permission denied. You cannot proceed with the exam.");
+            alert("⚠️ Camera access denied. Exam cannot proceed.");
         });
 
-    // 🔗 Connect PeerJS
+    // 🔗 Generate PeerJS ID
     const peer = new Peer();
-    peer.on("open", (id) => {
+    peer.on("open", id => {
         peerId = id;
         fetch("/store-peer-id", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ peerId: id }),
+            body: JSON.stringify({ peerId })
         });
     });
 
-    // 🖼️ Send screenshots every 10 seconds
+    // 📸 Screenshot every 10s
+    // 📸 Screenshot every 10s
     setInterval(() => {
-        if (!peerId || !video.videoWidth) return;
+        if (!peerId || !video.videoWidth || !video.videoHeight) return;
 
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        // ⏱ Temporarily show webcam to avoid black image
+        const previousDisplay = video.style.display;
+        video.style.display = "block";
 
-        const base64Image = canvas.toDataURL("image/png");
+        // Wait a moment to ensure frame is available
+        setTimeout(() => {
+            const canvas = document.createElement("canvas");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        fetch("/upload-screenshot", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ image: base64Image, peerId }),
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.message?.includes("Suspicious")) {
-                    violationCount++;
-                    violationDisplay.style.display = "block";
-                    violationDisplay.innerText = "⚠️ " + data.reasons.join(", ");
+            const base64Image = canvas.toDataURL("image/png");
+            video.style.display = previousDisplay; // Re-hide webcam
 
-                    if (data.action === "stop_exam") {
-                        document.querySelector(".quiz-container").style.display = "none";
-                        examEnded.style.display = "block";
-                    }
-                }
+            fetch("/upload-screenshot", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image: base64Image, peerId })
             })
-            .catch(err => console.error("Screenshot upload failed:", err));
+                .then(res => res.json())
+                .then(data => {
+                    if (data.message?.includes("Suspicious")) {
+                        violationCount++;
+
+                        violationDisplay.style.display = "block";
+                        violationDisplay.innerHTML = `
+                        ⚠️ ${data.reasons.join(", ")}<br>
+                        <img src="${data.cloudinary_url}" alt="Violation evidence" style="max-width:300px; margin-top:10px; border: 2px solid red;">
+                    `;
+
+                        if (data.action === "stop_exam") {
+                            quizContainer.style.display = "none";
+                            examEnded.style.display = "block";
+
+                            const stream = video.srcObject;
+                            if (stream) {
+                                stream.getTracks().forEach(track => track.stop());
+                                video.srcObject = null;
+                            }
+                        }
+
+                    }
+                })
+                .catch(err => console.error("Screenshot upload failed:", err));
+        }, 100); // wait 100ms before capturing
     }, 10000);
+
 });

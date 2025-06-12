@@ -1,94 +1,91 @@
-/* exam.css */
+/* exam.css (Merged) */
 
+/* Reset & Base */
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
 body, html {
-  margin: 0;
-  padding: 0;
   height: 100%;
   font-family: 'Inter', sans-serif;
   background: linear-gradient(to right, #f8f9fa, #e9ecef);
   color: #2c3e50;
 
-  /* Centering logic */
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
 }
 
+/* Header */
 header {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 70px;
-  background: white;
-  border-bottom: 1.5px solid #ddd;
+  background: #2d3e50;
+  color: white;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding: 0 40px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   z-index: 1000;
 }
 
 header h1 {
   font-weight: 700;
   font-size: 24px;
-  color: #007BFF;
   margin: 0;
 }
 
-header button {
-  background-color: #007BFF;
-  border: none;
-  padding: 10px 28px;
-  color: white;
-  font-weight: 600;
-  font-size: 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  box-shadow: 0 3px 8px rgba(0,123,255,0.4);
-}
-
-header button:hover {
-  background-color: #0056b3;
-}
-
+/* Main Container */
 main.container {
   max-width: 700px;
   width: 100%;
   padding: 40px 50px;
-  box-sizing: border-box;
-  overflow-y: auto;
   background: white;
   border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-
-  /* Center contents inside the box */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 30px;
   text-align: center;
-
-  /* Let it fit naturally, not depend on full height margin */
-  margin: 0 auto;
+  margin: 100px auto 80px;
+  overflow-y: auto;
 }
 
-
+/* Instructions */
 .instructions {
   font-size: 18px;
   color: #555;
   font-weight: 500;
   user-select: none;
+  text-align: center;
 }
 
+/* Violation Display */
+#violationDisplay {
+  display: none;
+  padding: 10px 20px;
+  margin-bottom: 1rem;
+  border-left: 5px solid orange;
+  background-color: #fff3cd;
+  color: #856404;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* Video Box */
 .video-box {
   background: #f4f9ff;
   border-radius: 14px;
@@ -100,12 +97,14 @@ main.container {
   align-items: center;
   user-select: none;
   transition: box-shadow 0.3s ease;
+  margin-bottom: 1.2rem;
 }
 
 .video-box:hover {
   box-shadow: 0 12px 36px rgba(0, 123, 255, 0.3);
 }
 
+/* Webcam Video */
 video#webcam {
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -115,14 +114,17 @@ video#webcam {
   box-shadow: 0 6px 22px rgba(0, 123, 255, 0.35);
 }
 
+/* Status Text */
 .status {
   font-size: 16px;
   color: #007BFF;
   font-weight: 600;
   user-select: none;
   margin-top: 10px;
+  text-align: center;
 }
 
+/* Proceed Button */
 #proceedBtn {
   background-color: #007BFF;
   border: none;
@@ -138,12 +140,33 @@ video#webcam {
   margin-top: 10px;
   width: fit-content;
   min-width: 180px;
+  text-align: center;
 }
 
 #proceedBtn:hover {
   background-color: #0056b3;
 }
 
+#proceedBtn a {
+  color: white;
+  text-decoration: none;
+}
+
+/* Exam Ended Message */
+#exam-ended {
+  display: none;
+  text-align: center;
+  padding: 30px;
+  border: 2px solid red;
+  background-color: #ffe5e5;
+  font-size: 1.2rem;
+  margin-top: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 600px;
+}
+
+/* Footer */
 footer {
   position: fixed;
   bottom: 0;
@@ -158,11 +181,11 @@ footer {
   font-size: 15px;
   font-weight: 500;
   user-select: none;
-  box-shadow: 0 -2px 6px rgba(0,0,0,0.12);
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.12);
   z-index: 1000;
-  font-family: 'Inter', sans-serif;
 }
 
+/* Scrollbar */
 main.container::-webkit-scrollbar {
   width: 8px;
 }
@@ -178,6 +201,7 @@ main.container::-webkit-scrollbar-thumb {
   border: 2px solid #f1f1f1;
 }
 
+/* Responsive */
 @media (max-width: 700px) {
   main.container {
     padding: 30px 25px;
@@ -190,10 +214,6 @@ main.container::-webkit-scrollbar-thumb {
 
   header h1 {
     font-size: 20px;
-  }
-
-  header button {
-    padding: 8px 20px;
   }
 
   #proceedBtn {

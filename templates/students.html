@@ -5,10 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Quiz</title>
+
+    <!-- Font + Animation CSS -->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/student.css') }}">
-    <script src="{{ url_for('static', filename='js/student.js') }}" defer></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- PeerJS & Custom Script -->
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="{{ url_for('static', filename='js/student.js') }}" defer></script>
 </head>
 
 <body>
@@ -61,23 +67,16 @@
             </div>
         </form>
     </div>
-    <!-- Hidden webcam video for proctoring -->
+
+    <!-- Webcam for proctoring -->
     <video id="webcam" autoplay playsinline muted style="display: none;"></video>
 
-    <!-- Optional alert box for violations -->
-    <div id="violationDisplay" style="display:none; color: red; font-weight: bold; text-align:center; padding: 10px;">
-    </div>
-
-    <!-- Hidden exam termination box -->
+    <!-- Violation alerts -->
+    <div id="violationDisplay" style="display:none; color: red; font-weight: bold; text-align:center; padding: 10px;"></div>
     <div id="examEnded"
         style="display: none; background: #ffdddd; padding: 20px; text-align: center; font-weight: bold;">
         🚫 Exam Terminated due to violations.
     </div>
-
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <script src="script.js"></script>
-
-
 </body>
 
 </html>
