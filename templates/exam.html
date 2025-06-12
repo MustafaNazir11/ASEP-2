@@ -122,13 +122,13 @@
     </p>
 
     <div id="violationDisplay"></div>
-
+    `
     <div class="video-box">
       <video id="webcam" autoplay playsinline muted></video>
     </div>
 
     <p class="status">Monitoring will start when you proceed.</p>
-    <button id="proceedBtn">Start Exam</button>
+    <button id="proceedBtn"><a href="{{ url_for('quiz') }}">Start Exam</a></button>
 
     <div id="exam-ended">
       <h2>🚫 Exam Terminated</h2>

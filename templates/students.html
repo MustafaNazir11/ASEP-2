@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/student.css') }}">
+    <script src="{{ url_for('static', filename='js/student.js') }}" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1 class="animate__animated animate__fadeInDown">Interactive Quiz</h1>
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+            <div class="question-counter">Question <span id="current-question">1</span> of <span id="total-questions">0</span></div>
+        </div>
+        
+        <form method="POST" action="/submit" id="quiz-form">
+            {% for q in questions %}
+                <div class="question-block {% if loop.first %}active{% endif %}">
+                    <p class="question-text animate__animated animate__fadeIn"><strong>Q{{ loop.index }}: {{ q[1] }}</strong></p>
+                    <div class="options-container">
+                        <label class="option animate__animated animate__fadeInLeft">
+                            <input type="radio" name="question_{{ q[0] }}" value="A" required>
+                            <span class="option-text">A. {{ q[2] }}</span>
+                        </label>
+                        <label class="option animate__animated animate__fadeInRight">
+                            <input type="radio" name="question_{{ q[0] }}" value="B">
+                            <span class="option-text">B. {{ q[3] }}</span>
+                        </label>
+                        <label class="option animate__animated animate__fadeInLeft">
+                            <input type="radio" name="question_{{ q[0] }}" value="C">
+                            <span class="option-text">C. {{ q[4] }}</span>
+                        </label>
+                        <label class="option animate__animated animate__fadeInRight">
+                            <input type="radio" name="question_{{ q[0] }}" value="D">
+                            <span class="option-text">D. {{ q[5] }}</span>
+                        </label>
+                    </div>
+                </div>
+            {% endfor %}
+            
+            <div class="navigation-buttons">
+                <button type="button" id="prevBtn" class="btn btn-prev">
+                    <i class="fas fa-arrow-left"></i> Previous
+                </button>
+                <button type="button" id="nextBtn" class="btn btn-next">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+                <button type="submit" id="submitBtn" class="btn btn-submit">
+                    Submit Answers <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+</body>
+</html>
