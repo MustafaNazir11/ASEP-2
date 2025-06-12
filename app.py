@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_cors import CORS
-import os, base64, cv2
+import os, base64, cv2, sqlite3
 from datetime import datetime
 from ultralytics import YOLO
 import cloudinary
@@ -9,35 +9,44 @@ import cloudinary.uploader
 app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
 
-# Configure Cloudinary
+# 🔧 DB Initialization for Quiz
+def init_db():
+    conn = sqlite3.connect('questions.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS questions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            question TEXT,
+            option_a TEXT,
+            option_b TEXT,
+            option_c TEXT,
+            option_d TEXT,
+            correct_option TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+# 🌩️ Configure Cloudinary
 cloudinary.config(
     cloud_name="dmbhhqmxf",
     api_key="267234471199724",
     api_secret="hZc5Bh9SR7LSL4Fy3tNAZsOhDbY",
 )
 
+# 👁️‍🗨️ YOLO + Violation Variables
 peer_ids = set()
-violation_counts = {}      # Count of violations per peer
-violation_logs = []        # List of all violation logs
-model = YOLO("yolov8m.pt") # Pretrained YOLO model
-
+violation_counts = {}
+violation_logs = []
+model = YOLO("yolov8m.pt")
 SUSPICIOUS_CLASSES = {"cell phone", "laptop", "book", "mobile phone"}
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
+# 📋 Routes
 @app.route("/")
 def index():
     return redirect(url_for("login"))
 
-@app.route("/exam")
-def exam():
-    return render_template("exam.html")
-
-@app.route("/input-questions")
-def input_questions():
-    return render_template("questions.html")
-@app.route("/test")
-def test():
-    return render_template("test.html")
 @app.route("/login")
 def login():
     return render_template("login.html")
@@ -50,42 +59,74 @@ def admin():
 def dashboard():
     return render_template("dashboard.html")
 
-@app.route("/quiz")
-def quiz():
-    return render_template("students.html")
+@app.route("/exam")
+def exam():
+    return render_template("exam.html")
+
+@app.route("/test")
+def test():
+    return render_template("test.html")
 
 @app.route("/violations")
 def show_violations():
-    print("Violation Logs >>>", violation_logs)
     return render_template("violations.html", logs=violation_logs)
 
-@app.route("/store-peer-id", methods=["POST"])
-def store_peer_id():
-    data = request.json
-    peer_id = data.get("peerId")
-    if peer_id and peer_id not in peer_ids:
-        peer_ids.add(peer_id)
-        return jsonify({"message": "Peer ID stored", "peerId": peer_id})
-    return jsonify({"message": "Peer ID missing or duplicate"}), 400
+# 🧠 QUIZ: Add Questions
+@app.route("/input-questions", methods=['GET', 'POST'])
+def input_questions():
+    if request.method == 'POST':
+        question = request.form['question']
+        option_a = request.form['option_a']
+        option_b = request.form['option_b']
+        option_c = request.form['option_c']
+        option_d = request.form['option_d']
+        correct_option = request.form['correct_option']
 
-@app.route("/get-peer-ids")
-def get_peer_ids():
-    return jsonify(list(peer_ids))
+        conn = sqlite3.connect('questions.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO questions (question, option_a, option_b, option_c, option_d, correct_option)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (question, option_a, option_b, option_c, option_d, correct_option))
+        conn.commit()
+        conn.close()
+        return "✅ Question added successfully!"
 
-@app.route("/get-violation-counts")
-def get_violation_counts():
-    return jsonify(violation_counts)
+    return render_template('questions.html')
 
-@app.route("/delete-peer-id", methods=["POST"])
-def delete_peer_id():
-    data = request.json
-    peer_id = data.get("peerId")
-    if peer_id and peer_id in peer_ids:
-        peer_ids.remove(peer_id)
-        violation_counts.pop(peer_id, None)
-        return jsonify({"message": "Peer ID deleted", "peerId": peer_id})
-    return jsonify({"message": "Peer ID not found"}), 404
+# 🧠 QUIZ: View Questions
+@app.route("/quiz")
+def quiz():
+    conn = sqlite3.connect('questions.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM questions")
+    questions = cursor.fetchall()
+    conn.close()
+    return render_template("students.html", questions=questions)
 
+# 🧠 QUIZ: Submit Answers
+@app.route("/submit", methods=['POST'])
+def submit():
+    submitted_answers = request.form
+    conn = sqlite3.connect('questions.db')
+    cursor = conn.cursor()
+
+    score = 0
+    total = 0
+
+    for key, selected_option in submitted_answers.items():
+        if key.startswith('question_'):
+            q_id = key.split('_')[1]
+            cursor.execute("SELECT correct_option FROM questions WHERE id=?", (q_id,))
+            correct_option = cursor.fetchone()[0]
+            total += 1
+            if selected_option == correct_option:
+                score += 1
+
+    conn.close()
+    return f"✅ You scored {score} out of {total}"
+
+# 📷 Proctoring: Screenshot Upload
 @app.route("/upload-screenshot", methods=["POST"])
 def upload_screenshot():
     data = request.json
@@ -113,7 +154,6 @@ def upload_screenshot():
         suspicious = False
         reasons = []
 
-        print("📸 Running YOLO model...")
         results = model(frame, verbose=False)
         person_count = 0
 
@@ -154,17 +194,13 @@ def upload_screenshot():
             reasons.append("High brightness - possible screen reflection")
 
         if suspicious:
-            print(f"🚨 Violation by {peer_id}: {reasons}")
             violation_counts[peer_id] = violation_counts.get(peer_id, 0) + 1
-
-            # ✅ Add to log
             violation_logs.append({
                 "peer_id": peer_id,
                 "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "reasons": reasons
             })
 
-            # Save frame with violation highlights
             cv2.imwrite(image_path, frame)
 
             try:
@@ -183,26 +219,48 @@ def upload_screenshot():
 
                 return jsonify(response)
             except Exception as e:
-                print(f"❌ Cloudinary upload failed: {e}")
                 return jsonify({
-                    "message": "Suspicious activity detected, but upload to Cloudinary failed",
+                    "message": "Suspicious activity detected, but upload failed",
                     "error": str(e),
                     "reasons": reasons
                 }), 500
         else:
-            print(f"✅ No violation for {peer_id}")
             os.remove(image_path)
             return jsonify({"message": "No suspicion detected. Screenshot deleted."})
 
     return jsonify({"message": "No image data received"}), 400
 
+# 📡 Peer ID Handling
+@app.route("/store-peer-id", methods=["POST"])
+def store_peer_id():
+    data = request.json
+    peer_id = data.get("peerId")
+    if peer_id and peer_id not in peer_ids:
+        peer_ids.add(peer_id)
+        return jsonify({"message": "Peer ID stored", "peerId": peer_id})
+    return jsonify({"message": "Peer ID missing or duplicate"}), 400
+
+@app.route("/get-peer-ids")
+def get_peer_ids():
+    return jsonify(list(peer_ids))
+
+@app.route("/delete-peer-id", methods=["POST"])
+def delete_peer_id():
+    data = request.json
+    peer_id = data.get("peerId")
+    if peer_id and peer_id in peer_ids:
+        peer_ids.remove(peer_id)
+        violation_counts.pop(peer_id, None)
+        return jsonify({"message": "Peer ID deleted", "peerId": peer_id})
+    return jsonify({"message": "Peer ID not found"}), 404
+
+# 📸 View Saved Screenshots
 @app.route("/view_screenshots")
 def view_screenshots():
     screenshots_folder = os.path.join(app.static_folder, "screenshots")
     os.makedirs(screenshots_folder, exist_ok=True)
     files = os.listdir(screenshots_folder)
     images = [f"/static/screenshots/{file}" for file in files if file.endswith(".png")]
-
     html = "<h1>Suspicious Screenshots</h1><div style='display:flex; flex-wrap: wrap;'>"
     for img in images:
         html += f'''
@@ -214,5 +272,7 @@ def view_screenshots():
     html += "</div>"
     return html
 
+# 🚀 Start the App
 if __name__ == "__main__":
+    init_db()
     app.run(debug=True)
