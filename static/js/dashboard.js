@@ -1,138 +1,75 @@
-// Assumes updated backend: /get-peer-ids returns array of { peerId, name, examStart, violations }
+const peer = new Peer(undefined, {
+  host: "0.peerjs.com",
+  port: 443,
+  secure: true
+});
 
-const videoGrid = document.querySelector(".video-grid");
-const alertsList = document.getElementById("alertsList");
-const startMonitoringBtn = document.getElementById("startMonitoringBtn");
+const backendURL = window.location.origin;
+const studentGallery = document.getElementById("studentGallery");
 
-const detailModal = document.getElementById("detailModal");
-const closeModalBtn = document.getElementById("closeModalBtn");
-const detailVideo = document.getElementById("detailVideo");
-const detailStudentName = document.getElementById("detailStudentName");
-const detailExamName = document.getElementById("detailExamName");
-const detailExamStatus = document.getElementById("detailExamStatus");
+peer.on("open", (adminId) => {
+  console.log("%c👨‍💼 Admin PeerJS ready:", "color: green;", adminId);
+  loadAllStudents();
+});
 
-let peer;
-let studentMetadata = {}; // Store metadata by peerId
-
-function getDummyStream() {
-  const ctx = new AudioContext();
-  const oscillator = ctx.createOscillator();
-  const dst = oscillator.connect(ctx.createMediaStreamDestination());
-  oscillator.start();
-  return dst.stream;
+// Fetch all peer IDs from the server
+function loadAllStudents() {
+  fetch(`${backendURL}/get-peer-ids`)
+    .then(res => res.json())
+    .then(peerIds => {
+      console.log("👥 Active students:", peerIds);
+      studentGallery.innerHTML = "";
+      peerIds.forEach(peerId => createStudentCard(peerId));
+    })
+    .catch(err => {
+      console.error("❌ Error fetching student list:", err);
+    });
 }
 
-startMonitoringBtn.addEventListener("click", () => {
-  startMonitoringBtn.disabled = true;
+// Create UI + Call for a student
+function createStudentCard(peerId) {
+  const card = document.createElement("div");
+  card.className = "student-card";
 
-  peer = new Peer({ host: "0.peerjs.com", port: 443, secure: true });
+  const video = document.createElement("video");
+  video.autoplay = true;
+  video.playsInline = true;
+  card.appendChild(video);
 
-  peer.on("open", (adminPeerId) => {
-    fetch(`${window.location.origin}/get-peer-ids`)
-      .then(res => res.json())
-      .then(students => {
-        if (!students.length) {
-          addAlert("[Alert] No student peers connected yet.");
-          return;
-        }
+  const info = document.createElement("div");
+  info.className = "info";
+  info.innerHTML = `
+    <p><strong>Student ID:</strong> ${peerId}</p>
+    <p class="violation" id="violations-${peerId}">Violations: ...</p>
+  `;
+  card.appendChild(info);
+  studentGallery.appendChild(card);
 
-        const dummyStream = getDummyStream();
-
-        students.forEach(({ peerId, name, examStart, violations }) => {
-          studentMetadata[peerId] = { name, examStart, violations };
-
-          const call = peer.call(peerId, dummyStream);
-          if (!call) {
-            addAlert(`[Error] Failed to call ${peerId}`);
-            return;
-          }
-
-          call.on("stream", (stream) => {
-            addOrUpdateVideoBox(peerId, stream);
-          });
-
-          call.on("close", () => removeVideoBox(peerId));
-
-          call.on("error", (err) => addAlert(`[Error] Call error with ${peerId}: ${err.message}`));
-        });
-      })
-      .catch(err => addAlert("[Error] Failed to fetch student peer IDs from server."));
+  const call = peer.call(peerId, null);
+  call.on("stream", (remoteStream) => {
+    video.srcObject = remoteStream;
+    console.log(`📺 Streaming from ${peerId}`);
   });
 
-  peer.on("error", (err) => addAlert(`[Error] PeerJS Error: ${err.type}`));
-});
+  call.on("close", () => {
+    console.log(`📴 Stream closed for ${peerId}`);
+    card.remove();
+  });
 
-function addOrUpdateVideoBox(peerId, stream) {
-  let videoBox = document.querySelector(`.video-box[data-peer-id="${peerId}"]`);
-  const meta = studentMetadata[peerId] || {};
-
-  if (!videoBox) {
-    videoBox = document.createElement("div");
-    videoBox.classList.add("video-box");
-    videoBox.dataset.peerId = peerId;
-
-    const title = document.createElement("h3");
-    title.textContent = `${meta.name || "Student"} (${peerId.slice(0, 6)}...)`;
-    videoBox.appendChild(title);
-
-    const videoElem = document.createElement("video");
-    videoElem.autoplay = true;
-    videoElem.playsInline = true;
-    videoElem.muted = true;
-    videoElem.srcObject = stream;
-    videoElem.onloadedmetadata = () => videoElem.play().catch(err => console.warn(err));
-    videoBox.appendChild(videoElem);
-
-    const metaInfo = document.createElement("div");
-    metaInfo.classList.add("student-meta");
-    metaInfo.innerHTML = `
-      <p><strong>Start:</strong> ${new Date(meta.examStart).toLocaleString()}</p>
-      <p><strong>Violations:</strong> ${meta.violations ?? 0}</p>
-    `;
-    videoBox.appendChild(metaInfo);
-
-    videoBox.addEventListener("click", () => openDetailModal(peerId));
-    videoGrid.appendChild(videoBox);
-  } else {
-    const videoElem = videoBox.querySelector("video");
-    if (videoElem.srcObject !== stream) {
-      videoElem.srcObject = stream;
-      videoElem.onloadedmetadata = () => videoElem.play().catch(err => console.warn(err));
-    }
-  }
+  updateViolationCount(peerId);
 }
 
-function removeVideoBox(peerId) {
-  const videoBox = document.querySelector(`.video-box[data-peer-id="${peerId}"]`);
-  if (videoBox) videoBox.remove();
-}
-
-function openDetailModal(peerId) {
-  const meta = studentMetadata[peerId] || {};
-
-  detailStudentName.textContent = meta.name || `Student (${peerId})`;
-  detailExamName.textContent = "Exam Name: Unknown";
-  detailExamStatus.textContent = `Status: In Progress | Violations: ${meta.violations ?? 0}`;
-
-  const videoBox = document.querySelector(`.video-box[data-peer-id="${peerId}"]`);
-  const videoElem = videoBox?.querySelector("video");
-
-  if (videoElem) {
-    detailVideo.srcObject = videoElem.srcObject;
-    detailVideo.onloadedmetadata = () => detailVideo.play().catch(err => console.warn(err));
-  }
-
-  detailModal.classList.remove("hidden");
-}
-
-closeModalBtn.addEventListener("click", () => {
-  detailModal.classList.add("hidden");
-  detailVideo.pause();
-  detailVideo.srcObject = null;
-});
-
-function addAlert(message) {
-  const li = document.createElement("li");
-  li.innerHTML = `<i class="fa fa-exclamation-triangle"></i> ${message}`;
-  alertsList.prepend(li);
+// Poll violation counts every 10 seconds
+function updateViolationCount(peerId) {
+  const update = () => {
+    fetch(`${backendURL}/violation-counts`)
+      .then(res => res.json())
+      .then(data => {
+        const count = data[peerId] || 0;
+        const element = document.getElementById(`violations-${peerId}`);
+        if (element) element.textContent = `Violations: ${count}`;
+      });
+  };
+  update();
+  setInterval(update, 10000); // every 10 sec
 }

@@ -44,10 +44,7 @@ function sendPeerIdToServer(peerId) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ peerId })
   })
-  .then(res => {
-    if (!res.ok) throw new Error(`Server error status: ${res.status}`);
-    return res.json();
-  })
+  .then(res => res.json())
   .then(data => {
     console.log("%c✅ Peer ID successfully stored on backend", "color: green;");
   })
@@ -66,10 +63,7 @@ function deletePeerIdFromServer(peerId) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ peerId })
   })
-  .then(res => {
-    if (!res.ok) throw new Error(`Server error status: ${res.status}`);
-    return res.json();
-  })
+  .then(res => res.json())
   .then(data => {
     console.log("%c✅ Peer ID successfully deleted from backend", "color: green;");
   })
@@ -114,21 +108,46 @@ function captureScreenshot() {
 // ✅ Upload screenshot
 function uploadScreenshot() {
   const image = captureScreenshot();
-  if (!image) return;
+  if (!image || !studentPeerId) return;
 
   fetch(`${backendURL}/upload-screenshot`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ image })
+    body: JSON.stringify({
+      image: image,
+      peerId: studentPeerId
+    })
   })
   .then(res => res.json())
   .then(data => {
     console.log("%c📤 Screenshot uploaded to backend.", "color: teal;");
+    if (data.reasons) {
+      console.warn("🚨 Reasons:", data.reasons.join(", "));
+    }
+    if (data.action === "stop_exam") {
+      alert("⚠️ Exam terminated due to repeated violations.");
+      stopExamSession();
+    }
   })
   .catch(err => {
     console.error("%c❌ Screenshot upload failed:", "color: red;");
     console.error(err);
   });
+}
+
+// ✅ Stop the exam session (called on violation)
+function stopExamSession() {
+  if (screenshotIntervalId) clearInterval(screenshotIntervalId);
+  deletePeerIdFromServer(studentPeerId);
+
+  // Stop video
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+  }
+
+  // Replace content on page
+  const container = document.getElementById("exam-form") || document.body;
+  container.innerHTML = `<h2 style="color:red; text-align:center;">🚫 Exam Terminated due to Policy Violation</h2>`;
 }
 
 // ✅ Start webcam and screenshot loop
@@ -148,7 +167,6 @@ function startExamSession() {
       await waitForVideoReady(webcam);
       console.log("✅ Webcam video confirmed ready for display and screenshots.");
 
-      // ✅ Answer pending call if admin already called
       if (pendingCall) {
         console.log("%c📞 Answering previously received call from admin...", "color: purple;");
         pendingCall.answer(localStream);
@@ -156,9 +174,7 @@ function startExamSession() {
         pendingCall = null;
       }
 
-      // ✅ Start screenshot capture loop
-      if (screenshotIntervalId) clearInterval(screenshotIntervalId);
-      screenshotIntervalId = setInterval(uploadScreenshot, 5000); // Every 5 sec
+      screenshotIntervalId = setInterval(uploadScreenshot, 1000); // Every 1 seconds
       console.log("📷 Screenshot capture loop started.");
     })
     .catch((err) => {
