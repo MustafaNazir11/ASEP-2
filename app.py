@@ -56,6 +56,14 @@ def login():
 def admin():
     return render_template("admin-dashboard.html")
 
+@app.route("/profile")
+def profile():
+    return render_template("profile.html")
+
+@app.route("/adminprofile")
+def adminprofile():
+    return render_template("adminprofile.html")
+
 @app.route("/dashboard")
 def dashboard():
     return render_template("dashboard.html")
