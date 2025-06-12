@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Proctor - Student Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --danger: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 2rem 1rem;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+
+        .brand-icon {
+            font-size: 2rem;
+            margin-right: 10px;
+            color: var(--accent);
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        .nav-item {
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            font-size: 1rem;
+        }
+
+        .nav-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title h1 {
+            color: var(--dark);
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .page-title p {
+            color: #6c757d;
+            margin: 0;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .action-btn {
+            background: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            color: var(--dark);
+        }
+
+        .action-btn:hover {
+            background: var(--accent);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Exam Table Styles */
+        .exam-table {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        tr:hover {
+            background-color: #e9f5ff;
+        }
+
+        .exam-status {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-upcoming {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .exam-action {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .exam-action:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .icon-blue {
+            background-color: #e3f2fd;
+            color: var(--primary);
+        }
+
+        .icon-green {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .icon-orange {
+            background-color: #fff3e0;
+            color: #e65100;
+        }
+
+        .stat-info h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--dark);
+        }
+
+        .stat-info p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="brand-name">AI Proctor</div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link">
+                        <i class="fas fa-home nav-icon"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/exam" class="nav-link">
+                        <i class="fas fa-book-open nav-icon"></i>
+                        My Exams
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-chart-line nav-icon"></i>
+                        Performance
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-cog nav-icon"></i>
+                        Settings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/logout" class="nav-link">
+                        <i class="fas fa-sign-out-alt nav-icon"></i>
+                        Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="header">
+                <div class="page-title">
+                    <h1>Student Dashboard</h1>
+                    <p>Welcome back! Here's your exam schedule</p>
+                </div>
+                
+                <div class="user-actions">
+                    <button class="action-btn" title="Notifications">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <button class="action-btn" title="Messages">
+                        <i class="fas fa-envelope"></i>
+                    </button>
+                    <button class="action-btn" title="Help">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>4</h3>
+                        <p>Upcoming Exams</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon icon-green">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>2</h3>
+                        <p>Completed</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon icon-orange">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>1</h3>
+                        <p>Pending Results</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exam Table -->
+            <div class="exam-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>St.No</th>
+                            <th>Course Code</th>
+                            <th>Course Name</th>
+                            <th>Exam</th>
+                            <th>Quiz Name</th>
+                            <th>Exam Date</th>
+                            <th>Exam Slot</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>CS1012</td>
+                            <td>PROBLEM SOLVING & PROGRAMMING</td>
+                            <td>24-25_52_ESE</td>
+                            <td>GSAID 92 2425</td>
+                            <td>09-06-2025</td>
+                            <td>10:30 to 11:30</td>
+                            <td><span class="exam-status status-upcoming">Upcoming</span></td>
+                            <td><button class="exam-action">View Details</button></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>HS1073</td>
+                            <td>INDIAN KNOWLEDGE SYSTEM</td>
+                            <td>24-25_52_ESE</td>
+                            <td>IKS ESE GSAI D</td>
+                            <td>12-06-2025</td>
+                            <td>10:30 to 11:30</td>
+                            <td><span class="exam-status status-upcoming">Upcoming</span></td>
+                            <td><button class="exam-action">View Details</button></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>G11019</td>
+                            <td>Computer Organization</td>
+                            <td>24-25_52_ESE</td>
+                            <td>ESE MCO EXAM</td>
+                            <td>10-06-2025</td>
+                            <td>10:30 to 11:30</td>
+                            <td><span class="exam-status status-active">Active</span></td>
+                            <td><button class="exam-action">Start Exam</button></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>G11020</td>
+                            <td>Web Development</td>
+                            <td>24-25_52_ESE</td>
+                            <td>GSAI_D_ESE</td>
+                            <td>11-06-2025</td>
+                            <td>10:30 to 11:30</td>
+                            <td><span class="exam-status status-upcoming">Upcoming</span></td>
+                            <td><button class="exam-action">View Details</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // Simulated login email - in real scenario, get this from backend/session
+    const userEmail = "ojas.manchanda24@example.com";
+
+    // Extract names from email
+    function extractName(email) {
+        const [username] = email.split("@");  // ojas.manchanda24
+        const cleanUsername = username.replace(/[0-9]/g, ""); // ojas.manchanda
+        const parts = cleanUsername.split(".");
+        if (parts.length >= 2) {
+            const firstName = capitalize(parts[0]);
+            const lastName = capitalize(parts[1]);
+            return `${firstName} ${lastName}`;
+        }
+        return "User";
+    }
+
+    function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // 1. Extract name
+        const fullName = extractName(userEmail);
+
+        // 2. Add welcome message
+        const pageTitle = document.querySelector(".page-title");
+        const welcomeMsg = document.createElement("p");
+        welcomeMsg.textContent = `Welcome ${fullName}`;
+        welcomeMsg.style.fontWeight = "500";
+        welcomeMsg.style.color = "#3f37c9";
+        welcomeMsg.style.marginTop = "0.5rem";
+        pageTitle.appendChild(welcomeMsg);
+
+        // Existing button functionality
+        document.querySelector('.fa-bell').closest('.action-btn').addEventListener('click', function () {
+            alert('You have 3 new notifications');
+        });
+
+        document.querySelector('.fa-envelope').closest('.action-btn').addEventListener('click', function () {
+            alert('No new messages');
+        });
+
+        document.querySelector('.fa-question-circle').closest('.action-btn').addEventListener('click', function () {
+            alert('Help center will open in a new window');
+        });
+
+        document.querySelector('.fa-sign-out-alt').closest('.nav-link').addEventListener('click', function (e) {
+            if (!confirm('Are you sure you want to logout?')) {
+                e.preventDefault();
+            }
+        });
+
+        document.querySelectorAll('.exam-action').forEach(btn => {
+            btn.addEventListener('click', function () {
+                if (this.textContent === 'Start Exam') {
+                    window.location.href = '/exam';
+                } else {
+                    alert('Exam details will be shown here');
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

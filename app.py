@@ -29,7 +29,9 @@ def index():
 @app.route("/exam")
 def exam():
     return render_template("exam.html")
-
+@app.route("/test")
+def test():
+    return render_template("test.html")
 @app.route("/login")
 def login():
     return render_template("login.html")
