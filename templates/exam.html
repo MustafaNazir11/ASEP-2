@@ -7,6 +7,96 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/exam.css') }}">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header, footer {
+      background-color: #2d3e50;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    .instructions {
+      text-align: center;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    #violationDisplay {
+      display: none;
+      padding: 10px 20px;
+      margin-bottom: 1rem;
+      border-left: 5px solid orange;
+      background-color: #fff3cd;
+      color: #856404;
+      border-radius: 8px;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .video-box {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 100%;
+      margin-bottom: 1.2rem;
+    }
+
+    video {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+    }
+
+    .status {
+      text-align: center;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+    }
+
+    #proceedBtn {
+      margin-top: 1.2rem;
+      padding: 12px 24px;
+      font-size: 1rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #proceedBtn:hover {
+      background-color: #0056b3;
+    }
+
     #exam-ended {
       display: none;
       text-align: center;
@@ -16,6 +106,8 @@
       font-size: 1.2rem;
       margin-top: 20px;
       border-radius: 10px;
+      width: 90%;
+      max-width: 600px;
     }
   </style>
 </head>
@@ -25,14 +117,18 @@
   </header>
 
   <main class="container" id="exam-form">
-    <p class="instructions">Click <strong>Start Exam</strong> to begin. Your camera will turn on automatically.</p>
+    <p class="instructions">
+      Click <strong>Start Exam</strong> to begin. Your camera will turn on automatically.
+    </p>
 
+    <div id="violationDisplay"></div>
+    `
     <div class="video-box">
-      <video id="webcam" autoplay playsinline muted width="400" height="300" style="border: 1px solid #ccc;"></video>
+      <video id="webcam" autoplay playsinline muted></video>
     </div>
 
     <p class="status">Monitoring will start when you proceed.</p>
-    <button id="proceedBtn">Start Exam</button>
+    <button id="proceedBtn"><a href="{{ url_for('quiz') }}">Start Exam</a></button>
 
     <div id="exam-ended">
       <h2>🚫 Exam Terminated</h2>
@@ -44,7 +140,6 @@
     &copy; 2025 AI Proctoring System. All rights reserved.
   </footer>
 
-  <!-- PeerJS CDN -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="{{ url_for('static', filename='js/exam.js') }}"></script>
 </body>

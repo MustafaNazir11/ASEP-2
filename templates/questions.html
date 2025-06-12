@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Questions</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/questions.css') }}">
+    <script src="{{ url_for('static', filename='js/questions.js') }}" defer></script>
+</head>
+<body>
+    <h2>Add Multiple Questions</h2>
+    <form id="question-form" method="POST">
+        <div id="questions-container">
+            <!-- Dynamic question blocks will appear here -->
+        </div>
+
+        <div id="navigation-buttons">
+            <button type="button" id="prev-btn" onclick="showPrevious()">⬅️ Previous</button>
+            <button type="button" id="next-btn" onclick="showNext()">Next ➡️</button>
+            <button type="button" id="add-btn" onclick="addQuestionBlock()">➕ Add New</button>
+            <button type="submit">✅ Submit All</button>
+        </div>
+    </form>
+</body>
+</html>
