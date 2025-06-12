@@ -39,7 +39,7 @@ source venv/bin/activate
 ```
 ### 3. Install Packages
 ```
-pip install flask flask-cors opencv-python ultralytics
+pip install flask flask-cors opencv-python ultralytics cloudinary
 ```
 
 ### 4. Run the program 
