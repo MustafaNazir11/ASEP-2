@@ -14,6 +14,14 @@ let screenshotIntervalId = null;
 
 const backendURL = window.location.origin;
 
+// ✅ Clear violation display on page load
+window.addEventListener("load", () => {
+  const violationDisplay = document.getElementById("violationDisplay");
+  if (violationDisplay) {
+    violationDisplay.textContent = "";
+  }
+});
+
 // ✅ PeerJS connection
 peer.on("open", (id) => {
   studentPeerId = id;
@@ -44,14 +52,14 @@ function sendPeerIdToServer(peerId) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ peerId })
   })
-  .then(res => res.json())
-  .then(data => {
-    console.log("%c✅ Peer ID successfully stored on backend", "color: green;");
-  })
-  .catch(err => {
-    console.error("%c❌ Failed to send peer ID to backend!", "color: red;");
-    console.error(err);
-  });
+    .then(res => res.json())
+    .then(data => {
+      console.log("%c✅ Peer ID successfully stored on backend", "color: green;");
+    })
+    .catch(err => {
+      console.error("%c❌ Failed to send peer ID to backend!", "color: red;");
+      console.error(err);
+    });
 }
 
 // ✅ Delete Peer ID from backend
@@ -63,14 +71,14 @@ function deletePeerIdFromServer(peerId) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ peerId })
   })
-  .then(res => res.json())
-  .then(data => {
-    console.log("%c✅ Peer ID successfully deleted from backend", "color: green;");
-  })
-  .catch(err => {
-    console.error("%c❌ Failed to delete peer ID from backend!", "color: red;");
-    console.error(err);
-  });
+    .then(res => res.json())
+    .then(data => {
+      console.log("%c✅ Peer ID successfully deleted from backend", "color: green;");
+    })
+    .catch(err => {
+      console.error("%c❌ Failed to delete peer ID from backend!", "color: red;");
+      console.error(err);
+    });
 }
 
 // ✅ Wait for webcam readiness
@@ -118,21 +126,34 @@ function uploadScreenshot() {
       peerId: studentPeerId
     })
   })
-  .then(res => res.json())
-  .then(data => {
-    console.log("%c📤 Screenshot uploaded to backend.", "color: teal;");
-    if (data.reasons) {
-      console.warn("🚨 Reasons:", data.reasons.join(", "));
-    }
-    if (data.action === "stop_exam") {
-      alert("⚠️ Exam terminated due to repeated violations.");
-      stopExamSession();
-    }
-  })
-  .catch(err => {
-    console.error("%c❌ Screenshot upload failed:", "color: red;");
-    console.error(err);
-  });
+    .then(res => res.json())
+    .then(data => {
+      console.log("%c📤 Screenshot uploaded to backend.", "color: teal;");
+
+      // ✅ Display violation popup and update div
+      if (data.reasons) {
+        const reasonsText = data.reasons.join(", ");
+        console.warn("🚨 Reasons:", reasonsText);
+
+        // Show popup alert
+        alert("⚠️ Violation Detected: " + reasonsText);
+
+        // Update on-screen violation message
+        const violationDisplay = document.getElementById("violationDisplay");
+        if (violationDisplay) {
+          violationDisplay.textContent = "⚠️ Violation: " + reasonsText;
+        }
+      }
+
+      if (data.action === "stop_exam") {
+        alert("⚠️ Exam terminated due to repeated violations.");
+        stopExamSession();
+      }
+    })
+    .catch(err => {
+      console.error("%c❌ Screenshot upload failed:", "color: red;");
+      console.error(err);
+    });
 }
 
 // ✅ Stop the exam session (called on violation)
@@ -140,12 +161,10 @@ function stopExamSession() {
   if (screenshotIntervalId) clearInterval(screenshotIntervalId);
   deletePeerIdFromServer(studentPeerId);
 
-  // Stop video
   if (localStream) {
     localStream.getTracks().forEach(track => track.stop());
   }
 
-  // Replace content on page
   const container = document.getElementById("exam-form") || document.body;
   container.innerHTML = `<h2 style="color:red; text-align:center;">🚫 Exam Terminated due to Policy Violation</h2>`;
 }
@@ -174,7 +193,7 @@ function startExamSession() {
         pendingCall = null;
       }
 
-      screenshotIntervalId = setInterval(uploadScreenshot, 1000); // Every 1 seconds
+      screenshotIntervalId = setInterval(uploadScreenshot, 1000);
       console.log("📷 Screenshot capture loop started.");
     })
     .catch((err) => {
