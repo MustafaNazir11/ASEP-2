@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Profile</title>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #5d5fef;
+      --secondary-color: #8b8df8;
+      --accent-color: #ff6b6b;
+      --dark-color: #2b2d42;
+      --light-color: #f8f9fa;
+      --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #dfe3ee 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: var(--dark-color);
+    }
+
+    .admin-container {
+      width: 100%;
+      max-width: 900px;
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .admin-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .admin-header h1 {
+      font-size: 2.5rem;
+      color: var(--primary-color);
+      margin-bottom: 10px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .admin-header h1::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+      border-radius: 2px;
+    }
+
+    .admin-header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    .admin-card {
+      background: white;
+      border-radius: 15px;
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+      display: flex;
+      transition: all 0.3s ease;
+    }
+
+    .admin-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .profile-section {
+      flex: 1;
+      padding: 30px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .profile-pic-container {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      border: 5px solid white;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 25px;
+      overflow: hidden;
+      position: relative;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .profile-pic {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .admin-details {
+      flex: 2;
+      padding: 40px;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+      position: relative;
+      animation: slideIn 0.5s ease-out forwards;
+      opacity: 0;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .form-group:nth-child(1) { animation-delay: 0.2s; }
+    .form-group:nth-child(2) { animation-delay: 0.3s; }
+    .form-group:nth-child(3) { animation-delay: 0.4s; }
+    .form-group:nth-child(4) { animation-delay: 0.5s; }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--dark-color);
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      background-color: #f8f9fa;
+    }
+
+    .input-field[readonly] {
+      background-color: #f0f0f0;
+      color: #555;
+      cursor: not-allowed;
+    }
+
+    .input-icon {
+      position: absolute;
+      right: 15px;
+      top: 40px;
+      color: var(--primary-color);
+      opacity: 0.7;
+    }
+
+    @media (max-width: 768px) {
+      .admin-card {
+        flex-direction: column;
+      }
+      .profile-section {
+        padding-bottom: 20px;
+      }
+      .admin-details {
+        padding: 30px 20px;
+      }
+    }
+
+    .corner-circle {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: rgba(93, 95, 239, 0.05);
+    }
+
+    .circle-1 {
+      top: -50px;
+      left: -50px;
+    }
+
+    .circle-2 {
+      bottom: -50px;
+      right: -50px;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <div class="admin-header">
+      <h1>Admin Profile</h1>
+      <p>Manage your account information</p>
+    </div>
+
+    <div class="admin-card">
+      <div class="profile-section">
+        <div class="corner-circle circle-1"></div>
+        <div class="corner-circle circle-2"></div>
+        <div class="profile-pic-container">
+          <img src="" alt="" class="profile-pic">
+        </div>
+        <h3>Administrator</h3>
+        <p><i class="fas fa-shield-alt"></i> Super Admin Access</p>
+      </div>
+
+      <div class="admin-details">
+        <div class="form-group">
+          <label for="fullname">Full Name</label>
+          <i class="fas fa-user input-icon"></i>
+          <input type="text" id="fullname" class="input-field" value="Swati Joshi" readonly>
+        </div>
+
+        <div class="form-group">
+          <label for="username">Username or Admin ID</label>
+          <i class="fas fa-id-card input-icon"></i>
+          <input type="text" id="username" class="input-field" value="swati_001" readonly>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <i class="fas fa-envelope input-icon"></i>
+          <input type="email" id="email" class="input-field" value="swati.joshi@vit.edu" readonly>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <i class="fas fa-phone input-icon"></i>
+          <input type="tel" id="phone" class="input-field" value="87669770776" readonly>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
