@@ -42,6 +42,44 @@ function createStudentCard(peerId) {
     <p><strong>Student ID:</strong> ${peerId}</p>
     <p class="violation" id="violations-${peerId}">Violations: ...</p>
   `;
+
+  // Add "View Violations" button
+  const violationBtn = document.createElement("button");
+  violationBtn.textContent = "View Violations";
+  violationBtn.onclick = () => {
+    window.location.href = "/violations";
+  };
+  violationBtn.style.cssText = `
+    margin-top: 8px;
+    padding: 8px 16px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  `;
+
+  // Add "Back to Admin Dashboard" button
+  const backButton = document.createElement("button");
+  backButton.textContent = "Back to Admin Dashboard";
+  backButton.onclick = () => {
+    window.location.href = "http://127.0.0.1:5000/admin";
+  };
+  backButton.style.cssText = `
+    margin-top: 8px;
+    margin-left: 8px;
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  `;
+
+  info.appendChild(violationBtn);
+  info.appendChild(backButton);
   card.appendChild(info);
   studentGallery.appendChild(card);
 

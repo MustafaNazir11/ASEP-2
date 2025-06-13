@@ -275,15 +275,9 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/dashboard" class="nav-link">
+                    <a href="#" class="nav-link" id="dashboard-link">
                         <i class="fas fa-home nav-icon"></i>
                         Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/exam" class="nav-link">
-                        <i class="fas fa-book-open nav-icon"></i>
-                        My Exams
                     </a>
                 </li>
                 <li class="nav-item">
@@ -299,7 +293,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/logout" class="nav-link">
+                    <a href="#" class="nav-link" id="logout-link">
                         <i class="fas fa-sign-out-alt nav-icon"></i>
                         Logout
                     </a>
@@ -462,6 +456,23 @@
         welcomeMsg.style.marginTop = "0.5rem";
         pageTitle.appendChild(welcomeMsg);
 
+        // Make dashboard link reload the current page
+        document.getElementById('dashboard-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            location.reload();
+        });
+
+        // Handle logout click
+        document.getElementById('logout-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('Are you sure you want to logout?')) {
+                // Force redirect to login page
+                window.location.href = 'http://127.0.0.1:5000/login';
+                // Alternative that prevents back navigation:
+                // window.location.replace('http://127.0.0.1:5000/login');
+            }
+        });
+
         // Existing button functionality
         document.querySelector('.fa-bell').closest('.action-btn').addEventListener('click', function () {
             alert('You have 3 new notifications');
@@ -473,12 +484,6 @@
 
         document.querySelector('.fa-question-circle').closest('.action-btn').addEventListener('click', function () {
             alert('Help center will open in a new window');
-        });
-
-        document.querySelector('.fa-sign-out-alt').closest('.nav-link').addEventListener('click', function (e) {
-            if (!confirm('Are you sure you want to logout?')) {
-                e.preventDefault();
-            }
         });
 
         document.querySelectorAll('.exam-action').forEach(btn => {

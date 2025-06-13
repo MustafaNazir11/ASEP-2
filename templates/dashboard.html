@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
@@ -29,7 +30,7 @@
       background: #fff;
       border-radius: 10px;
       padding: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     video {
@@ -48,14 +49,55 @@
       color: red;
       font-weight: bold;
     }
+
+    .card-buttons {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .card-buttons button {
+      flex: 1;
+      padding: 8px;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .view-violations {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .back-admin {
+      background-color: #007bff;
+      color: white;
+    }
   </style>
 </head>
+
 <body>
   <h1>Admin Dashboard - Live Student Monitoring</h1>
-  <div id="studentGallery"></div>
 
-  <!-- PeerJS -->
+  <div id="studentGallery">
+    <!-- These cards will be populated dynamically in dashboard.js -->
+    <!-- Example student-card for reference:
+    <div class="student-card">
+      <video autoplay></video>
+      <div class="info">Name: John Doe</div>
+      <div class="info">Exam Start: 10:00 AM</div>
+      <div class="card-buttons">
+        <button class="view-violations" onclick="window.location.href='/violations'">View Violations</button>
+        <button class="back-admin" onclick="window.location.href='/admin-dashboard'">Back to Dashboard</button>
+      </div>
+    </div>
+    -->
+  </div>
+
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
+
 </html>

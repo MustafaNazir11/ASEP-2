@@ -4,72 +4,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login - AI Proctoring System</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    body {
-      background-color: #080710;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    form {
-      background: rgba(255, 255, 255, 0.13);
-      backdrop-filter: blur(10px);
-      border: 2px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 0 40px rgba(8, 7, 16, 0.6);
-      padding: 50px 35px;
-      border-radius: 10px;
-      width: 400px;
-    }
-
-    input, select, button {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      background: rgba(255, 255, 255, 0.07);
-      color: white;
-    }
-
-    button {
-      background: #ffffff;
-      color: #080710;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .error {
-      color: #ff6b6b;
-      margin: 10px 0;
-      display: none;
-    }
-  </style>
-  <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
 <body>
-  <form id="login-form">
-    <h3 style="color: white; text-align: center; margin-bottom: 20px;">Login Here</h3>
+  <div class="background">
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
 
-    <label for="email" style="color: white;">Email</label>
-    <input type="email" placeholder="Email" id="email" name="email" required>
+  <form id="login-form" class="login-container">
+    <h3>Login</h3>
 
-    <label for="password" style="color: white;">Password</label>
-    <input type="password" placeholder="Password" id="password" name="password" required>
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" placeholder="Enter your email" required>
 
-    <label for="role" style="color: white;">Role</label>
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+
+    <label for="role">Select Role</label>
     <select id="role" name="role" required>
-      <option value="">Select your role</option>
+      <option value="" disabled selected>-- Select your role --</option>
       <option value="student">Student</option>
       <option value="admin">Admin</option>
     </select>
@@ -77,20 +33,14 @@
     <button type="submit">Log In</button>
     <p id="login-error" class="error"></p>
 
-    <div class="social" style="margin-top: 20px;">
-      <div class="go" id="google-login" style="background: #DB4437; color: white; padding: 10px; border-radius: 5px; text-align: center; cursor: pointer; margin-bottom: 10px;">
-        <i class="fab fa-google"></i> Google
-      </div>
-      <div class="fb" id="facebook-login" style="background: #4267B2; color: white; padding: 10px; border-radius: 5px; text-align: center; cursor: pointer;">
-        <i class="fab fa-facebook"></i> Facebook
-      </div>
+    <div class="social">
+      <div id="google-login" class="go"><i class="fab fa-google"></i> Continue with Google</div>
+      <div id="facebook-login" class="fb"><i class="fab fa-facebook"></i> Continue with Facebook</div>
     </div>
   </form>
 
-  <!-- Firebase JS SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAvcCjY7FV4sVW4U17cbqw0lCKskGbPJ-8",
@@ -101,7 +51,6 @@
       appId: "1:996647336840:web:ff1a0b2d9b3759827b183d",
       measurementId: "G-1FL2RK3NJB"
     };
-
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
@@ -111,50 +60,36 @@
       const googleLoginBtn = document.getElementById('google-login');
       const facebookLoginBtn = document.getElementById('facebook-login');
 
-      // Email login
       loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = loginForm['email'].value;
-        const password = loginForm['password'].value;
-        const role = loginForm['role'].value;
+        const email = loginForm.email.value;
+        const password = loginForm.password.value;
+        const role = loginForm.role.value;
 
-        if (!role) {
-          showError('Please select your role');
-          return;
-        }
+        if (!role) return showError('Please select your role');
 
         try {
           const userCredential = await auth.signInWithEmailAndPassword(email, password);
-          const user = userCredential.user;
-          console.log('User logged in:', user);
-
-          // Redirect based on role
-          if (role === 'admin') {
-            window.location.href = '/admin';
-          } else {
-            window.location.href = '/test';
-          }
+          window.location.href = role === 'admin' ? '/admin' : '/test';
         } catch (error) {
           showError(getUserFriendlyError(error.code));
         }
       });
 
-      // Google login
       googleLoginBtn.addEventListener('click', async () => {
         try {
           const provider = new firebase.auth.GoogleAuthProvider();
-          const result = await auth.signInWithPopup(provider);
+          await auth.signInWithPopup(provider);
           window.location.href = '/dashboard';
         } catch (error) {
           showError(getUserFriendlyError(error.code));
         }
       });
 
-      // Facebook login
       facebookLoginBtn.addEventListener('click', async () => {
         try {
           const provider = new firebase.auth.FacebookAuthProvider();
-          const result = await auth.signInWithPopup(provider);
+          await auth.signInWithPopup(provider);
           window.location.href = '/dashboard';
         } catch (error) {
           showError(getUserFriendlyError(error.code));
@@ -164,20 +99,18 @@
       function showError(message) {
         loginError.textContent = message;
         loginError.style.display = 'block';
-        setTimeout(() => {
-          loginError.style.display = 'none';
-        }, 5000);
+        setTimeout(() => loginError.style.display = 'none', 5000);
       }
 
-      function getUserFriendlyError(errorCode) {
-        switch (errorCode) {
-          case 'auth/invalid-email': return 'Invalid email address.';
-          case 'auth/user-disabled': return 'This account has been disabled.';
-          case 'auth/user-not-found': return 'No account found with this email.';
-          case 'auth/wrong-password': return 'Incorrect password.';
-          case 'auth/too-many-requests': return 'Too many attempts. Try again later.';
-          default: return 'Login failed. Please try again.';
-        }
+      function getUserFriendlyError(code) {
+        const messages = {
+          'auth/invalid-email': 'Invalid email address.',
+          'auth/user-disabled': 'This account has been disabled.',
+          'auth/user-not-found': 'No account found with this email.',
+          'auth/wrong-password': 'Incorrect password.',
+          'auth/too-many-requests': 'Too many attempts. Try again later.'
+        };
+        return messages[code] || 'Login failed. Please try again.';
       }
     });
   </script>
