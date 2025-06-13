@@ -190,3 +190,9 @@ body {
         justify-content: center;
     }
 }
+
+.swal2-popup.violation-alert {
+    font-size: 1rem;
+    border: 2px solid red;
+    border-radius: 15px;
+}

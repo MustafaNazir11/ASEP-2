@@ -132,11 +132,23 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log("📸 Evidence URL:", data.cloudinary_url);
         console.log("⚠️ Total Violations:", violationCount);
 
-        violationDisplay.style.display = "block";
-        violationDisplay.innerHTML = `
-            ⚠️ ${data.reasons.join(", ")}<br>
-            <img src="${data.cloudinary_url}" alt="Violation evidence" style="max-width:300px; margin-top:10px; border: 2px solid red;">
-        `;
+        // Show styled popup with SweetAlert2
+        Swal.fire({
+            icon: 'warning',
+            title: 'Violation Detected!',
+            html: `
+                <strong>Reason:</strong> ${data.reasons.join(", ")}<br>
+                <strong>Total Violations:</strong> ${violationCount}
+            `,
+            confirmButtonText: 'OK',
+            customClass: {
+                popup: 'violation-alert'
+            }
+        });
+
+        // Hide the image display
+        violationDisplay.style.display = "none";
+        violationDisplay.innerHTML = "";
 
         if (data.action === "stop_exam") {
             console.log("🛑 Exam forcibly ended due to violations.");
@@ -148,6 +160,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 stream.getTracks().forEach(track => track.stop());
                 video.srcObject = null;
             }
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Exam Ended',
+                text: 'Exam forcibly terminated due to repeated violations.',
+                confirmButtonText: 'OK'
+            });
         }
     } else {
         console.log("✅ Screenshot analyzed: No violation detected.");
@@ -156,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
                 .catch(err => console.error("Screenshot upload failed:", err));
-        }, 100); // wait 100ms before capturing
+        }, 500); // wait 100ms before capturing
     }, 3000);
 
 });
