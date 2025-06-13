@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exam Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/results.css') }}">
+</head>
+<body>
+    <div class="result-container">
+        <h1>🎉 Exam Results</h1>
+        <div class="score-box">
+            You scored <span id="score">{{ score }}</span> out of <span id="total">{{ total }}</span>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress" style="width: {{ percentage }}%"></div>
+        </div>
+
+        <p class="message">{{ message }}</p>
+
+        <a href="{{ url_for('dashboard') }}" class="back-button">🔙 Back to Dashboard</a>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/results.js') }}"></script>
+</body>
+</html>

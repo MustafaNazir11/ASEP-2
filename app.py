@@ -133,7 +133,9 @@ def submit():
                 score += 1
 
     conn.close()
-    return f"✅ You scored {score} out of {total}"
+
+    percentage = (score / total) * 100 if total > 0 else 0
+    return render_template("results.html", score=score, total=total, percentage=percentage, message="")
 
 # 📷 Proctoring: Screenshot Upload
 @app.route("/upload-screenshot", methods=["POST"])

@@ -103,8 +103,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!peerId || !video.videoWidth || !video.videoHeight) return;
 
         // ⏱ Temporarily show webcam to avoid black image
-        const previousDisplay = video.style.display;
-        video.style.display = "block";
+        
 
         // Wait a moment to ensure frame is available
         setTimeout(() => {
@@ -114,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function () {
             canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
 
             const base64Image = canvas.toDataURL("image/png");
-            video.style.display = previousDisplay; // Re-hide webcam
+            
 
             fetch("/upload-screenshot", {
                 method: "POST",
@@ -123,30 +122,41 @@ document.addEventListener('DOMContentLoaded', function () {
             })
                 .then(res => res.json())
                 .then(data => {
-                    if (data.message?.includes("Suspicious")) {
-                        violationCount++;
+    console.log("✅ Screenshot uploaded to Cloudinary");
+    console.log("🌩️ Cloudinary URL:", data.cloudinary_url);
 
-                        violationDisplay.style.display = "block";
-                        violationDisplay.innerHTML = `
-                        ⚠️ ${data.reasons.join(", ")}<br>
-                        <img src="${data.cloudinary_url}" alt="Violation evidence" style="max-width:300px; margin-top:10px; border: 2px solid red;">
-                    `;
+    if (data.message?.includes("Suspicious")) {
+        violationCount++;
 
-                        if (data.action === "stop_exam") {
-                            quizContainer.style.display = "none";
-                            examEnded.style.display = "block";
+        console.log("🚨 Violation Detected:", data.reasons.join(", "));
+        console.log("📸 Evidence URL:", data.cloudinary_url);
+        console.log("⚠️ Total Violations:", violationCount);
 
-                            const stream = video.srcObject;
-                            if (stream) {
-                                stream.getTracks().forEach(track => track.stop());
-                                video.srcObject = null;
-                            }
-                        }
+        violationDisplay.style.display = "block";
+        violationDisplay.innerHTML = `
+            ⚠️ ${data.reasons.join(", ")}<br>
+            <img src="${data.cloudinary_url}" alt="Violation evidence" style="max-width:300px; margin-top:10px; border: 2px solid red;">
+        `;
 
-                    }
-                })
+        if (data.action === "stop_exam") {
+            console.log("🛑 Exam forcibly ended due to violations.");
+            quizContainer.style.display = "none";
+            examEnded.style.display = "block";
+
+            const stream = video.srcObject;
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+            }
+        }
+    } else {
+        console.log("✅ Screenshot analyzed: No violation detected.");
+    }
+})
+
+
                 .catch(err => console.error("Screenshot upload failed:", err));
         }, 100); // wait 100ms before capturing
-    }, 10000);
+    }, 3000);
 
 });
