@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,10 +8,18 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/exam.css') }}">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
 </head>
+
 <body>
   <header>
     <h1>Exam Page (Student)</h1>
+
+    {% if session.get('email') %}
+    <div class="user-info">
+      👤 {{ session.get('email') }}
+    </div>
+    {% endif %}
   </header>
+
 
   <main class="container" id="exam-form">
     <p class="instructions">
@@ -40,7 +49,7 @@
 
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="{{ url_for('static', filename='js/exam.js') }}"></script>
-  
+
   <!-- JS to handle camera preview -->
   <script>
     document.getElementById('previewBtn').addEventListener('click', async () => {
@@ -54,4 +63,5 @@
     });
   </script>
 </body>
+
 </html>

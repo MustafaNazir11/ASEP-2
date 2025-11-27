@@ -67,12 +67,12 @@
         <div class="card feature">
           <h2>Upload Test</h2>
           <p>Create and upload exams with proctoring configuration, duration, and start time.</p>
-          <button class="btn-primary">Go to Upload</button>
+          <button class="btn-primary" id="uploadBtn">Go to Upload</button>
         </div>
         <div class="card feature">
           <h2>Monitor Exams</h2>
           <p>Watch ongoing exams, detect suspicious behavior, and intervene if needed.</p>
-          <button class="btn-secondary" onclick="window.location.href='http://127.0.0.1:5000/dashboard';">Go to Monitoring</button>
+          <button class="btn-secondary" id="monitorBtn">Go to Monitoring</button>
         </div>
       </section>
 
@@ -99,9 +99,17 @@
         const reader = new FileReader();
         reader.onload = function (e) {
           document.getElementById('profile-preview').src = e.target.result;
-        }
+        };
         reader.readAsDataURL(file);
       }
+    });
+
+    document.getElementById('uploadBtn').addEventListener('click', function () {
+      window.location.href = '{{ url_for("input_questions") }}';
+    });
+
+    document.getElementById('monitorBtn').addEventListener('click', function () {
+      window.location.href = 'http://127.0.0.1:5000/dashboard';
     });
 
     document.getElementById('logoutBtn').addEventListener('click', function () {

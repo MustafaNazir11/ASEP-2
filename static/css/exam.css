@@ -227,3 +227,15 @@ main.container::-webkit-scrollbar-thumb {
     padding: 15px;
   }
 }
+/* User Info Top Right */
+.user-info {
+  position: absolute;
+  right: 20px;
+  font-size: 15px;
+  color: #ffffff;
+  background: rgba(255,255,255,0.15);
+  padding: 7px 15px;
+  border-radius: 6px;
+  border: 1px solid #ffffff38;
+  font-weight: 600;
+}

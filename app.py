@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from flask_cors import CORS
 import os, base64, cv2, sqlite3
 from datetime import datetime
@@ -12,7 +12,7 @@ CORS(app)
 
 # 🔧 DB Initialization for Quiz
 def init_db():
-    conn = sqlite3.connect('questions.db')
+    conn = sqlite3.connect('Database.db')
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS questions (
@@ -25,8 +25,36 @@ def init_db():
             correct_option TEXT
         )
     ''')
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS students (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        )
+    ''')
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS teachers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        )
+    ''')
+    
+    # Add test users
+    cursor.execute("INSERT OR IGNORE INTO students (email, password) VALUES (?, ?)", ("student@test.com", "password"))
+    cursor.execute("INSERT OR IGNORE INTO teachers (email, password) VALUES (?, ?)", ("teacher@test.com", "admin123"))
+    
     conn.commit()
     conn.close()
+app.secret_key = "super_secret_key_123"  # Required for session cookies
+
+def get_db_connection():
+    conn = sqlite3.connect('Database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
 
 # 🌩️ Configure Cloudinary
 cloudinary.config(
@@ -48,9 +76,66 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_fronta
 def index():
     return redirect(url_for("login"))
 
-@app.route("/login")
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template("login.html")
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        conn = get_db_connection()
+        student = conn.execute("SELECT * FROM students WHERE email=? AND password=?", (email, password)).fetchone()
+        
+        if student:
+            session['user_id'] = student['id']
+            session['email'] = student['email']
+            session['user_type'] = 'student'
+            conn.close()
+            return redirect(url_for('exam'))
+        
+        conn.close()
+        return "Invalid credentials"
+
+    return render_template('login.html')
+
+# 🧾 STUDENT REGISTER PAGE & INSERT DATA
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        conn = get_db_connection()
+        try:
+            conn.execute("INSERT INTO students (email, password) VALUES (?, ?)", (email, password))
+            conn.commit()
+            conn.close()
+            return redirect(url_for('login'))
+        except:
+            conn.close()
+            return "❌ Email already exists! Try another."
+
+    return render_template('register.html')
+
+@app.route('/admin-login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        conn = get_db_connection()
+        teacher = conn.execute("SELECT * FROM teachers WHERE email=? AND password=?", (email, password)).fetchone()
+        
+        if teacher:
+            session['user_id'] = teacher['id']
+            session['email'] = teacher['email']
+            session['user_type'] = 'teacher'
+            conn.close()
+            return redirect(url_for('admin'))
+        
+        conn.close()
+        return "Invalid credentials"
+
+    return render_template('admin-login.html')
 
 @app.route("/admin")
 def admin():
@@ -84,29 +169,35 @@ def show_violations():
 @app.route("/input-questions", methods=['GET', 'POST'])
 def input_questions():
     if request.method == 'POST':
-        question = request.form['question']
-        option_a = request.form['option_a']
-        option_b = request.form['option_b']
-        option_c = request.form['option_c']
-        option_d = request.form['option_d']
-        correct_option = request.form['correct_option']
+        questions = request.form.getlist('question')
+        option_as = request.form.getlist('option_a')
+        option_bs = request.form.getlist('option_b')
+        option_cs = request.form.getlist('option_c')
+        option_ds = request.form.getlist('option_d')
+        correct_options = request.form.getlist('correct_option')
 
-        conn = sqlite3.connect('questions.db')
+        conn = sqlite3.connect('Database.db')
         cursor = conn.cursor()
-        cursor.execute('''
-            INSERT INTO questions (question, option_a, option_b, option_c, option_d, correct_option)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (question, option_a, option_b, option_c, option_d, correct_option))
+        
+        count = 0
+        for i in range(len(questions)):
+            if questions[i].strip():  # Only insert non-empty questions
+                cursor.execute('''
+                    INSERT INTO questions (question, option_a, option_b, option_c, option_d, correct_option)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (questions[i], option_as[i], option_bs[i], option_cs[i], option_ds[i], correct_options[i]))
+                count += 1
+        
         conn.commit()
         conn.close()
-        return "✅ Question added successfully!"
+        return f"✅ {count} questions added successfully!"
 
     return render_template('questions.html')
 
 # 🧠 QUIZ: View Questions
 @app.route("/quiz")
 def quiz():
-    conn = sqlite3.connect('questions.db')
+    conn = sqlite3.connect('Database.db')
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM questions")
     questions = cursor.fetchall()
@@ -117,7 +208,7 @@ def quiz():
 @app.route("/submit", methods=['POST'])
 def submit():
     submitted_answers = request.form
-    conn = sqlite3.connect('questions.db')
+    conn = sqlite3.connect('Database.db')
     cursor = conn.cursor()
 
     score = 0
@@ -129,7 +220,7 @@ def submit():
             cursor.execute("SELECT correct_option FROM questions WHERE id=?", (q_id,))
             correct_option = cursor.fetchone()[0]
             total += 1
-            if selected_option == correct_option:
+            if selected_option.lower() == correct_option.lower():
                 score += 1
 
     conn.close()
