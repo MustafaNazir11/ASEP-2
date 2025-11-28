@@ -308,7 +308,7 @@ def upload_screenshot():
 
     return jsonify({"message": "No suspicion detected.", "reasons": reasons})
 
-# ------------ NEW: TAB / BROWSER VIOLATION ENDPOINT -----------------
+# ------------  TAB / BROWSER VIOLATION ENDPOINT -----------------
 @app.route("/tab-violation", methods=["POST"])
 def tab_violation():
     global create_violation_entry_fn
