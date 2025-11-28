@@ -147,7 +147,7 @@ def input_questions():
         for i in range(len(questions)):
             if questions[i].strip():
                 cursor.execute('''INSERT INTO questions (question, option_a, option_b, option_c, option_d, correct_option)
-                                VALUES (?, ?, ?, ?, ?, ?)''', 
+                                VALUES (?, ?, ?, ?, ?, ?)''',
                                 (questions[i], option_as[i], option_bs[i], option_cs[i], option_ds[i], correct_options[i]))
                 count += 1
         conn.commit()
@@ -307,6 +307,49 @@ def upload_screenshot():
         return jsonify(response)
 
     return jsonify({"message": "No suspicion detected.", "reasons": reasons})
+
+# ------------ NEW: TAB / BROWSER VIOLATION ENDPOINT -----------------
+@app.route("/tab-violation", methods=["POST"])
+def tab_violation():
+    global create_violation_entry_fn
+    # Lazy-load create_violation function if not already
+    if create_violation_entry_fn is None:
+        try:
+            from utils.violation_rules import create_violation_entry as vio_fn
+            create_violation_entry_fn = vio_fn
+        except Exception as e:
+            # Fallback: simple entry creator
+            def create_simple_entry(pid, reasons_list):
+                return {
+                    "peer_id": pid,
+                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "reasons": reasons_list
+                }
+            create_violation_entry_fn = create_simple_entry
+
+    data = request.json or {}
+    peer_id = data.get("peerId")
+    reason = data.get("reason", "Browser/tab violation")
+
+    if not peer_id:
+        # if peer id missing, try to infer from request (not implemented currently)
+        return jsonify({"message": "Peer ID missing"}), 400
+
+    # increment and log
+    violation_counts[peer_id] = violation_counts.get(peer_id, 0) + 1
+    entry = create_violation_entry_fn(peer_id, [reason])
+    violation_logs.append(entry)
+
+    response = {
+        "message": "Tab/Browser violation recorded",
+        "reason": reason,
+        "count": violation_counts[peer_id]
+    }
+
+    if violation_counts[peer_id] >= 5:
+        response["action"] = "stop_exam"
+
+    return jsonify(response)
 
 # ------------ PEER ID HANDLING -----------------
 @app.route("/store-peer-id", methods=["POST"])
