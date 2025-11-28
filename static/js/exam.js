@@ -6,6 +6,8 @@ const peer = new Peer({
 
 const webcam = document.getElementById("webcam");
 const proceedBtn = document.getElementById("proceedBtn");
+const frameCanvas = document.getElementById("frameCanvas");
+const canvasCtx = frameCanvas.getContext("2d");
 
 let localStream = null;
 let studentPeerId = null;
@@ -15,76 +17,84 @@ const backendURL = window.location.origin;
 
 // ✅ Send Peer ID to backend
 function sendPeerIdToServer(peerId) {
-  console.log("%c📤 Sending student Peer ID to backend...", "color: blue; font-weight: bold;");
   fetch(`${backendURL}/store-peer-id`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ peerId })
-  })
-    .then(res => res.json())
-    .then(data => {
-      console.log("%c✅ Peer ID stored on backend", "color: green;");
-    })
-    .catch(err => {
-      console.error("%c❌ Failed to send peer ID to backend!", "color: red;");
-      console.error(err);
-    });
+  }).catch(err => console.error("Failed to send peer ID:", err));
 }
 
-// ✅ Handle PeerJS connection
+// ✅ PeerJS setup
 peer.on("open", (id) => {
   studentPeerId = id;
-  console.log("%c✔ PeerJS connected! Student Peer ID:", "color: green;", studentPeerId);
   sendPeerIdToServer(studentPeerId);
 });
 
-// ✅ Handle incoming call from admin and answer with webcam
 peer.on("call", (call) => {
-  console.log("%c📞 Incoming call from admin!", "color: purple;");
   if (localStream) {
     call.answer(localStream);
-    console.log("%c📤 Sent webcam stream to admin.", "color: green;");
   } else {
     pendingCall = call;
-    console.warn("%c⚠️ Webcam not ready yet. Will answer later.", "color: orange;");
   }
 });
 
-// ✅ Wait for webcam to be ready
-function waitForVideoReady(videoElement) {
-  return new Promise((resolve) => {
-    if (videoElement.readyState >= 3) {
-      resolve();
-    } else {
-      videoElement.addEventListener("canplay", resolve, { once: true });
-    }
-  });
-}
-
-// ✅ Start webcam and redirect to student page
+// ✅ Start webcam & frame capture
 function startExamSession() {
-  console.log("%c🚀 Starting webcam and redirecting to student page...", "color: blue;");
-
   navigator.mediaDevices.getUserMedia({ video: true, audio: false })
     .then(async (stream) => {
       localStream = stream;
       webcam.srcObject = stream;
-      await waitForVideoReady(webcam);
 
       if (pendingCall) {
         pendingCall.answer(localStream);
         pendingCall = null;
       }
 
-      // ✅ Redirect to student page
-      window.location.href = "/quiz"; // update path if needed
+      // Start sending frames to backend
+      startFrameCapture();
 
+      // Redirect to quiz page
+      window.location.href = "/quiz";
     })
     .catch((err) => {
-      console.error("❌ Webcam access error:", err);
+      console.error("Webcam access error:", err);
       alert("Failed to access webcam. Please allow permission.");
     });
 }
+
+// ✅ Capture frame and send to backend every 200ms (~2 FPS)
+function startFrameCapture() {
+  setInterval(() => {
+    if (!localStream) return;
+
+    canvasCtx.drawImage(webcam, 0, 0, frameCanvas.width, frameCanvas.height);
+    const imageData = frameCanvas.toDataURL("image/png");
+
+    fetch(`${backendURL}/upload-screenshot`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: imageData, peerId: studentPeerId })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.reasons) {
+        document.getElementById("violationDisplay").innerHTML = data.reasons.join("<br>");
+      }
+    })
+    .catch(err => console.error("Frame upload error:", err));
+
+  }, 500); // 2 FPS
+}
+
+// ✅ Camera preview button
+document.getElementById('previewBtn').addEventListener('click', async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    webcam.srcObject = stream;
+  } catch (err) {
+    alert('Camera access denied or not available.');
+  }
+});
 
 // ✅ Clean up Peer ID on page unload
 window.addEventListener("beforeunload", () => {

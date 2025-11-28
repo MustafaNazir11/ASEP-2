@@ -1,77 +1,66 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from flask_cors import CORS
-import os, base64, cv2, sqlite3
+import os, base64, sqlite3, io
 from datetime import datetime
-from collections import deque
-from ultralytics import YOLO
+import numpy as np
+from PIL import Image
 import cloudinary
 import cloudinary.uploader
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
+app.secret_key = "super_secret_key_123"
 
-# 🔧 DB Initialization for Quiz
+# ---------------- DB FUNCTIONS -----------------
 def init_db():
     conn = sqlite3.connect('Database.db')
     cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS questions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            question TEXT,
-            option_a TEXT,
-            option_b TEXT,
-            option_c TEXT,
-            option_d TEXT,
-            correct_option TEXT
-        )
-    ''')
-    
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS students (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL
-        )
-    ''')
-    
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS teachers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL
-        )
-    ''')
-    
-    # Add test users
+    cursor.execute('''CREATE TABLE IF NOT EXISTS questions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        question TEXT,
+        option_a TEXT,
+        option_b TEXT,
+        option_c TEXT,
+        option_d TEXT,
+        correct_option TEXT
+    )''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS students (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL
+    )''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS teachers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL
+    )''')
+
     cursor.execute("INSERT OR IGNORE INTO students (email, password) VALUES (?, ?)", ("student@test.com", "password"))
     cursor.execute("INSERT OR IGNORE INTO teachers (email, password) VALUES (?, ?)", ("teacher@test.com", "admin123"))
-    
+
     conn.commit()
     conn.close()
-app.secret_key = "super_secret_key_123"  # Required for session cookies
 
 def get_db_connection():
     conn = sqlite3.connect('Database.db')
     conn.row_factory = sqlite3.Row
     return conn
 
-
-# 🌩️ Configure Cloudinary
+# ------------- CLOUDINARY CONFIG --------------
 cloudinary.config(
     cloud_name="dmbhhqmxf",
     api_key="267234471199724",
     api_secret="hZc5Bh9SR7LSL4Fy3tNAZsOhDbY",
 )
 
-# 👁️‍🗨️ YOLO + Violation Variables
+# ------------ PROCTORING MEMORY --------------
 peer_ids = set()
 violation_counts = {}
 violation_logs = []
-model = YOLO("yolov8m.pt")
-SUSPICIOUS_CLASSES = {"cell phone", "laptop", "book", "mobile phone"}
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
-# 📋 Routes
+# ---------------- ROUTES ----------------------
 @app.route("/")
 def index():
     return redirect(url_for("login"))
@@ -81,29 +70,23 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-
         conn = get_db_connection()
         student = conn.execute("SELECT * FROM students WHERE email=? AND password=?", (email, password)).fetchone()
-        
         if student:
             session['user_id'] = student['id']
             session['email'] = student['email']
             session['user_type'] = 'student'
             conn.close()
             return redirect(url_for('exam'))
-        
         conn.close()
         return "Invalid credentials"
-
     return render_template('login.html')
 
-# 🧾 STUDENT REGISTER PAGE & INSERT DATA
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-
         conn = get_db_connection()
         try:
             conn.execute("INSERT INTO students (email, password) VALUES (?, ?)", (email, password))
@@ -113,7 +96,6 @@ def register():
         except:
             conn.close()
             return "❌ Email already exists! Try another."
-
     return render_template('register.html')
 
 @app.route('/admin-login', methods=['GET', 'POST'])
@@ -121,33 +103,21 @@ def admin_login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-
         conn = get_db_connection()
         teacher = conn.execute("SELECT * FROM teachers WHERE email=? AND password=?", (email, password)).fetchone()
-        
         if teacher:
             session['user_id'] = teacher['id']
             session['email'] = teacher['email']
             session['user_type'] = 'teacher'
             conn.close()
             return redirect(url_for('admin'))
-        
         conn.close()
         return "Invalid credentials"
-
     return render_template('admin-login.html')
 
 @app.route("/admin")
 def admin():
     return render_template("admin-dashboard.html")
-
-@app.route("/profile")
-def profile():
-    return render_template("profile.html")
-
-@app.route("/adminprofile")
-def adminprofile():
-    return render_template("adminprofile.html")
 
 @app.route("/dashboard")
 def dashboard():
@@ -157,15 +127,11 @@ def dashboard():
 def exam():
     return render_template("exam.html")
 
-@app.route("/test")
-def test():
-    return render_template("test.html")
-
 @app.route("/violations")
 def show_violations():
     return render_template("violations.html", logs=violation_logs)
 
-# 🧠 QUIZ: Add Questions
+# ------------------ QUIZ ----------------------
 @app.route("/input-questions", methods=['GET', 'POST'])
 def input_questions():
     if request.method == 'POST':
@@ -175,45 +141,36 @@ def input_questions():
         option_cs = request.form.getlist('option_c')
         option_ds = request.form.getlist('option_d')
         correct_options = request.form.getlist('correct_option')
-
-        conn = sqlite3.connect('Database.db')
+        conn = get_db_connection()
         cursor = conn.cursor()
-        
         count = 0
         for i in range(len(questions)):
-            if questions[i].strip():  # Only insert non-empty questions
-                cursor.execute('''
-                    INSERT INTO questions (question, option_a, option_b, option_c, option_d, correct_option)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                ''', (questions[i], option_as[i], option_bs[i], option_cs[i], option_ds[i], correct_options[i]))
+            if questions[i].strip():
+                cursor.execute('''INSERT INTO questions (question, option_a, option_b, option_c, option_d, correct_option)
+                                VALUES (?, ?, ?, ?, ?, ?)''', 
+                                (questions[i], option_as[i], option_bs[i], option_cs[i], option_ds[i], correct_options[i]))
                 count += 1
-        
         conn.commit()
         conn.close()
         return f"✅ {count} questions added successfully!"
-
     return render_template('questions.html')
 
-# 🧠 QUIZ: View Questions
 @app.route("/quiz")
 def quiz():
-    conn = sqlite3.connect('Database.db')
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM questions")
     questions = cursor.fetchall()
     conn.close()
     return render_template("students.html", questions=questions)
 
-# 🧠 QUIZ: Submit Answers
 @app.route("/submit", methods=['POST'])
 def submit():
     submitted_answers = request.form
-    conn = sqlite3.connect('Database.db')
+    conn = get_db_connection()
     cursor = conn.cursor()
-
     score = 0
     total = 0
-
     for key, selected_option in submitted_answers.items():
         if key.startswith('question_'):
             q_id = key.split('_')[1]
@@ -222,117 +179,136 @@ def submit():
             total += 1
             if selected_option.lower() == correct_option.lower():
                 score += 1
-
     conn.close()
-
     percentage = (score / total) * 100 if total > 0 else 0
     return render_template("results.html", score=score, total=total, percentage=percentage, message="")
 
-# 📷 Proctoring: Screenshot Upload
+# ---------------- UPLOAD & ANALYSIS -----------------
+face_mesh_instance = None  # Lazy-loaded
+run_yolo_fn = None
+detect_faces_fn = None
+check_brightness_fn = None
+upload_to_cloudinary_fn = None
+create_violation_entry_fn = None
+
 @app.route("/upload-screenshot", methods=["POST"])
 def upload_screenshot():
+    global face_mesh_instance, run_yolo_fn, detect_faces_fn, check_brightness_fn, upload_to_cloudinary_fn, create_violation_entry_fn
+
+    # Lazy-load ML utils to avoid blocking Flask startup
+    if face_mesh_instance is None:
+        import mediapipe as mp
+        mp_face_mesh = mp.solutions.face_mesh
+        face_mesh_instance = mp_face_mesh.FaceMesh(
+            static_image_mode=False,
+            max_num_faces=1,
+            refine_landmarks=True,
+            min_detection_confidence=0.5,
+            min_tracking_confidence=0.5
+        )
+    if run_yolo_fn is None:
+        from utils.yolo_detector import run_yolo as yolo_fn
+        run_yolo_fn = yolo_fn
+    if detect_faces_fn is None:
+        from utils.face_detector import detect_faces as face_fn
+        detect_faces_fn = face_fn
+    if check_brightness_fn is None:
+        from utils.brightness_check import check_brightness as brightness_fn
+        check_brightness_fn = brightness_fn
+    if upload_to_cloudinary_fn is None:
+        from utils.cloud import upload_to_cloudinary as cloud_fn
+        upload_to_cloudinary_fn = cloud_fn
+    if create_violation_entry_fn is None:
+        from utils.violation_rules import create_violation_entry as vio_fn
+        create_violation_entry_fn = vio_fn
+
     data = request.json
     image_data = data.get("image")
     peer_id = data.get("peerId")
 
     if not peer_id:
         return jsonify({"message": "Peer ID missing"}), 400
+    if not image_data:
+        return jsonify({"message": "No image data received"}), 400
 
-    if image_data:
-        image_data = image_data.split(",")[1]
+    try:
+        import cv2
+        image_bytes = base64.b64decode(image_data.split(",")[1])
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        frame = np.array(image)[:, :, ::-1].copy()  # RGB -> BGR
+    except Exception as e:
+        return jsonify({"message": "Failed to decode image", "error": str(e)}), 400
+
+    suspicious = False
+    reasons = []
+
+    # YOLO detection
+    person_count, detections = run_yolo_fn(frame)
+    for label, conf, xyxy in detections:
+        suspicious = True
+        reasons.append(f"{label} detected")
+    if person_count > 1:
+        suspicious = True
+        reasons.append("Multiple people detected")
+
+    # Face detection
+    faces = detect_faces_fn(frame)
+    if len(faces) == 0:
+        suspicious = True
+        reasons.append("No face detected")
+
+    # FaceMesh + gaze
+    try:
+        rgb_frame = frame[:, :, ::-1]  # BGR -> RGB
+        results = face_mesh_instance.process(rgb_frame)
+        if results.multi_face_landmarks:
+            landmarks = results.multi_face_landmarks[0].landmark
+            left_eye_indices = [33, 133]
+            right_eye_indices = [362, 263]
+            left_eye_ratio = landmarks[left_eye_indices[0]].x - landmarks[left_eye_indices[1]].x
+            right_eye_ratio = landmarks[right_eye_indices[0]].x - landmarks[right_eye_indices[1]].x
+            if abs(left_eye_ratio) < 0.03 or abs(right_eye_ratio) < 0.03:
+                suspicious = True
+                reasons.append("Possible looking away detected")
+        else:
+            suspicious = True
+            reasons.append("FaceMesh landmarks not detected")
+    except Exception as e:
+        suspicious = True
+        reasons.append(f"FaceMesh error: {str(e)}")
+
+    # Brightness check
+    brightness = check_brightness_fn(frame)
+    if brightness > 200:
+        suspicious = True
+        reasons.append("High brightness - possible screen reflection")
+
+    # Handle suspicious
+    if suspicious:
+        violation_counts[peer_id] = violation_counts.get(peer_id, 0) + 1
+        entry = create_violation_entry_fn(peer_id, reasons)
+        violation_logs.append(entry)
         screenshots_folder = os.path.join(app.static_folder, "screenshots")
         os.makedirs(screenshots_folder, exist_ok=True)
-
         filename = f"screenshot_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.png"
+        import cv2
         image_path = os.path.join(screenshots_folder, filename)
+        cv2.imwrite(image_path, frame)
+        upload_result = upload_to_cloudinary_fn(image_path)
+        os.remove(image_path)
+        response = {
+            "message": "Suspicious activity detected",
+            "cloudinary_url": upload_result.get("secure_url"),
+            "public_id": upload_result.get("public_id"),
+            "reasons": reasons
+        }
+        if violation_counts[peer_id] >= 5:
+            response["action"] = "stop_exam"
+        return jsonify(response)
 
-        with open(image_path, "wb") as f:
-            f.write(base64.b64decode(image_data))
+    return jsonify({"message": "No suspicion detected.", "reasons": reasons})
 
-        frame = cv2.imread(image_path)
-        if frame is None:
-            return jsonify({"message": "Failed to read image"}), 400
-
-        suspicious = False
-        reasons = []
-
-        results = model(frame, verbose=False)
-        person_count = 0
-
-        for result in results:
-            for box in result.boxes:
-                cls_id = int(box.cls[0])
-                label = model.names[cls_id]
-                conf = float(box.conf[0])
-
-                if label == "person" and conf > 0.5:
-                    person_count += 1
-
-                if label in SUSPICIOUS_CLASSES and conf > 0.5:
-                    suspicious = True
-                    reasons.append(f"{label} detected")
-                    xyxy = box.xyxy[0].cpu().numpy().astype(int)
-                    cv2.rectangle(frame, (xyxy[0], xyxy[1]), (xyxy[2], xyxy[3]), (0, 0, 255), 2)
-                    cv2.putText(frame, label, (xyxy[0], xyxy[1] - 10),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
-
-        if person_count > 1:
-            suspicious = True
-            reasons.append("Multiple people detected")
-
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
-        if len(faces) == 0:
-            suspicious = True
-            reasons.append("No face detected")
-        else:
-            for (x, y, w, h) in faces:
-                cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
-
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        brightness = hsv[:, :, 2].mean()
-        if brightness > 200:
-            suspicious = True
-            reasons.append("High brightness - possible screen reflection")
-
-        if suspicious:
-            violation_counts[peer_id] = violation_counts.get(peer_id, 0) + 1
-            violation_logs.append({
-                "peer_id": peer_id,
-                "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "reasons": reasons
-            })
-
-            cv2.imwrite(image_path, frame)
-
-            try:
-                upload_result = cloudinary.uploader.upload(image_path, folder="exam_proctoring")
-                os.remove(image_path)
-
-                response = {
-                    "message": "Suspicious activity detected",
-                    "cloudinary_url": upload_result.get("secure_url"),
-                    "public_id": upload_result.get("public_id"),
-                    "reasons": reasons
-                }
-
-                if violation_counts[peer_id] >= 5:
-                    response["action"] = "stop_exam"
-
-                return jsonify(response)
-            except Exception as e:
-                return jsonify({
-                    "message": "Suspicious activity detected, but upload failed",
-                    "error": str(e),
-                    "reasons": reasons
-                }), 500
-        else:
-            os.remove(image_path)
-            return jsonify({"message": "No suspicion detected. Screenshot deleted."})
-
-    return jsonify({"message": "No image data received"}), 400
-
-# 📡 Peer ID Handling
+# ------------ PEER ID HANDLING -----------------
 @app.route("/store-peer-id", methods=["POST"])
 def store_peer_id():
     data = request.json
@@ -356,7 +332,7 @@ def delete_peer_id():
         return jsonify({"message": "Peer ID deleted", "peerId": peer_id})
     return jsonify({"message": "Peer ID not found"}), 404
 
-# 📸 View Saved Screenshots
+# ------------ VIEW SCREENSHOTS -----------------
 @app.route("/view_screenshots")
 def view_screenshots():
     screenshots_folder = os.path.join(app.static_folder, "screenshots")
@@ -374,7 +350,8 @@ def view_screenshots():
     html += "</div>"
     return html
 
-# 🚀 Start the App
+# ----------------- START APP ------------------
 if __name__ == "__main__":
     init_db()
-    app.run(debug=True)
+    # Flask will start instantly; ML models initialize lazily
+    app.run(host="127.0.0.1", port=5000, debug=True, threaded=True)
