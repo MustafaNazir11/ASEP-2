@@ -60,13 +60,14 @@
     // Small helper: if exam_active is set and this page is the quiz,
     // the exam.js protections (which rely on localStorage flags) will keep working.
     // We use the same endpoint name used in app.py: /tab-violation
-    function notifyTabViolationQuick(reason) {
-      fetch("/tab-violation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ peerId: localStorage.getItem("exam_peer_id") || null, reason })
-      }).catch(() => {});
-    }
+    
+    // function notifyTabViolationQuick(reason) {
+    //   fetch("/tab-violation", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({ peerId: localStorage.getItem("exam_peer_id") || null, reason })
+    //   }).catch(() => {});
+    // }
 
     // If the user navigated back to exam.html while exam_active, re-request fullscreen
     if (localStorage.getItem("exam_active") === "1") {
