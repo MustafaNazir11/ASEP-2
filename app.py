@@ -77,10 +77,19 @@ def login():
             session['email'] = student['email']
             session['user_type'] = 'student'
             conn.close()
-            return redirect(url_for('exam'))
+            return redirect(url_for('test'))
         conn.close()
         return "Invalid credentials"
     return render_template('login.html')
+
+@app.route('/adminprofile')
+def adminprofile():
+    return render_template('adminprofile.html')
+
+@app.route('/stud_profile')
+def stud_profile():
+    return render_template('profile.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -98,6 +107,15 @@ def register():
             return "❌ Email already exists! Try another."
     return render_template('register.html')
 
+@app.route('/student_dashboard')
+def student_dashboard():
+    return render_template('student-dashboard.html')
+
+@app.route('/admin_dashboard')
+def admin_dashboard():
+    return render_template('admin-dashboard.html')
+
+
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
@@ -110,7 +128,7 @@ def admin_login():
             session['email'] = teacher['email']
             session['user_type'] = 'teacher'
             conn.close()
-            return redirect(url_for('admin'))
+            return redirect(url_for('admin_dashboard'))
         conn.close()
         return "Invalid credentials"
     return render_template('admin-login.html')
@@ -125,7 +143,7 @@ def dashboard():
 
 @app.route("/exam")
 def exam():
-    return render_template("exam.html")
+    return render_template("exam.html", email=session.get("email"))
 
 @app.route("/violations")
 def show_violations():
@@ -162,7 +180,14 @@ def quiz():
     cursor.execute("SELECT * FROM questions")
     questions = cursor.fetchall()
     conn.close()
-    return render_template("students.html", questions=questions)
+    return render_template("quiz.html", questions=questions)
+
+@app.route('/test')
+def test():
+    return render_template('student-dashboard.html')
+
+def student_dashboard():
+    return render_template('student-dashboard')
 
 @app.route("/submit", methods=['POST'])
 def submit():
@@ -272,7 +297,7 @@ def upload_screenshot():
                 reasons.append("Possible looking away detected")
         else:
             suspicious = True
-            reasons.append("FaceMesh landmarks not detected")
+            reasons.append("Face not visible properly")
     except Exception as e:
         suspicious = True
         reasons.append(f"FaceMesh error: {str(e)}")
@@ -331,6 +356,8 @@ def delete_peer_id():
         violation_counts.pop(peer_id, None)
         return jsonify({"message": "Peer ID deleted", "peerId": peer_id})
     return jsonify({"message": "Peer ID not found"}), 404
+
+
 
 # ------------ VIEW SCREENSHOTS -----------------
 @app.route("/view_screenshots")

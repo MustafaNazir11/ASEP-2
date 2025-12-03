@@ -423,80 +423,81 @@
     </div>
 
 <script>
-    // Simulated login email - in real scenario, get this from backend/session
-    const userEmail = "ojas.manchanda24@example.com";
+document.addEventListener("DOMContentLoaded", function () {
 
-    // Extract names from email
+    // Email coming from Flask
+    const userEmail = "{{ email }}";   // example: raghav.mulay24@example.com
+
+    // Convert email → name (First Last)
     function extractName(email) {
-        const [username] = email.split("@");  // ojas.manchanda24
-        const cleanUsername = username.replace(/[0-9]/g, ""); // ojas.manchanda
-        const parts = cleanUsername.split(".");
+        if (!email) return "User";
+
+        const [username] = email.split("@");  // raghav.mulay24
+        const clean = username.replace(/[0-9]/g, ""); // raghav.mulay
+        const parts = clean.split(".");
+
         if (parts.length >= 2) {
-            const firstName = capitalize(parts[0]);
-            const lastName = capitalize(parts[1]);
-            return `${firstName} ${lastName}`;
+            return capitalize(parts[0]) + " " + capitalize(parts[1]);
         }
-        return "User";
+        return capitalize(parts[0]);
     }
 
     function capitalize(str) {
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        // 1. Extract name
-        const fullName = extractName(userEmail);
+    // Extract final name
+    const fullName = extractName(userEmail);
 
-        // 2. Add welcome message
-        const pageTitle = document.querySelector(".page-title");
-        const welcomeMsg = document.createElement("p");
-        welcomeMsg.textContent = `Welcome ${fullName}`;
-        welcomeMsg.style.fontWeight = "500";
-        welcomeMsg.style.color = "#3f37c9";
-        welcomeMsg.style.marginTop = "0.5rem";
-        pageTitle.appendChild(welcomeMsg);
+    // Insert welcome text
+    const title = document.querySelector(".page-title");
+    const welcomeMsg = document.createElement("p");
+    welcomeMsg.textContent = `Welcome ${fullName}`;
+    welcomeMsg.style.fontWeight = "500";
+    welcomeMsg.style.color = "#3f37c9";
+    welcomeMsg.style.marginTop = "0.5rem";
+    title.appendChild(welcomeMsg);
 
-        // Make dashboard link reload the current page
-        document.getElementById('dashboard-link').addEventListener('click', function(e) {
-            e.preventDefault();
-            location.reload();
-        });
+    // Dashboard link refresh
+    document.getElementById('dashboard-link').addEventListener('click', function(e) {
+        e.preventDefault();
+        location.reload();
+    });
 
-        // Handle logout click
-        document.getElementById('logout-link').addEventListener('click', function(e) {
-            e.preventDefault();
-            if (confirm('Are you sure you want to logout?')) {
-                // Force redirect to login page
-                window.location.href = 'http://127.0.0.1:5000/login';
-                // Alternative that prevents back navigation:
-                // window.location.replace('http://127.0.0.1:5000/login');
+    // Logout
+    document.getElementById('logout-link').addEventListener('click', function(e) {
+        e.preventDefault();
+        if (confirm('Are you sure you want to logout?')) {
+            window.location.href = '/login';
+        }
+    });
+
+    // Notifications
+    document.querySelector('.fa-bell').closest('.action-btn').addEventListener('click', () => {
+        alert('You have 3 new notifications');
+    });
+
+    document.querySelector('.fa-envelope').closest('.action-btn').addEventListener('click', () => {
+        alert('No new messages');
+    });
+
+    document.querySelector('.fa-question-circle').closest('.action-btn').addEventListener('click', () => {
+        alert('Help center will open in a new window');
+    });
+
+    // Exam buttons
+    document.querySelectorAll('.exam-action').forEach(btn => {
+        btn.addEventListener('click', function () {
+            if (this.textContent.includes('Start')) {
+                window.location.href = '/exam';
+            } else {
+                alert('Exam details will be shown here');
             }
         });
-
-        // Existing button functionality
-        document.querySelector('.fa-bell').closest('.action-btn').addEventListener('click', function () {
-            alert('You have 3 new notifications');
-        });
-
-        document.querySelector('.fa-envelope').closest('.action-btn').addEventListener('click', function () {
-            alert('No new messages');
-        });
-
-        document.querySelector('.fa-question-circle').closest('.action-btn').addEventListener('click', function () {
-            alert('Help center will open in a new window');
-        });
-
-        document.querySelectorAll('.exam-action').forEach(btn => {
-            btn.addEventListener('click', function () {
-                if (this.textContent === 'Start Exam') {
-                    window.location.href = '/exam';
-                } else {
-                    alert('Exam details will be shown here');
-                }
-            });
-        });
     });
+});
 </script>
+
 
 </body>
 </html>
