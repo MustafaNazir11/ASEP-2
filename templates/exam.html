@@ -25,7 +25,10 @@
       Click <strong>Start Exam</strong> to begin. Your camera will turn on automatically.
     </p>
 
-    <div id="violationDisplay"></div>
+    <!-- Shows violation when tab-switching occurs -->
+    <div id="focusWarning" style="color:red; font-weight:600; margin-bottom:10px; display:none;"></div>
+
+    <div id="violationDisplay" style="color:red; font-weight:600;"></div>
 
     <div class="video-box">
       <video id="webcam" autoplay playsinline muted></video>
@@ -36,10 +39,8 @@
 
     <p class="status">Monitoring will start when you proceed.</p>
 
-    <!-- Start Exam Button -->
-    <button id="proceedBtn">
-      <a href="{{ url_for('quiz') }}" style="text-decoration: none; color: white;">Start Exam</a>
-    </button>
+    <!-- Start exam button -->
+    <button id="proceedBtn">Start Exam</button>
 
     <!-- Preview Camera Button -->
     <button id="previewBtn">Preview Camera</button>
@@ -51,6 +52,31 @@
 
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="{{ url_for('static', filename='js/exam.js') }}"></script>
-</body>
 
+  <!-- ------------------------------ -->
+  <!--  EXTRA: Ensure protections run if quiz page includes this file too -->
+  <!-- ------------------------------ -->
+  <script>
+    // Small helper: if exam_active is set and this page is the quiz,
+    // the exam.js protections (which rely on localStorage flags) will keep working.
+    // We use the same endpoint name used in app.py: /tab-violation
+    function notifyTabViolationQuick(reason) {
+      fetch("/tab-violation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId: localStorage.getItem("exam_peer_id") || null, reason })
+      }).catch(() => {});
+    }
+
+    // If the user navigated back to exam.html while exam_active, re-request fullscreen
+    if (localStorage.getItem("exam_active") === "1") {
+      try {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(()=>{});
+        }
+      } catch(e){}
+    }
+  </script>
+
+</body>
 </html>

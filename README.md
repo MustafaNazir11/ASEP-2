@@ -1,17 +1,23 @@
-# 🛡️ AI Proctoring System (Flask + YOLOv8)
+# 🛡️ AI Proctoring System (Flask + YOLOv8 + MediaPipe)
 
-An AI-powered proctoring web app using Flask, OpenCV, and Ultralytics YOLOv8. It captures screenshots from a student’s browser, uses YOLO to detect suspicious behavior (e.g., multiple persons, phones), and uploads flagged images to Database.
+An AI-powered online exam proctoring web application using Flask, OpenCV, YOLOv8, and MediaPipe.  
+It captures real-time screenshots from a student’s browser, detects suspicious behavior (multiple people, phone usage, unusual gaze), and uploads flagged images to Cloudinary. Teachers can monitor exams through a Flask dashboard.
 
 ---
 
 ## 📦 Features
 
-- Real-time screenshots sent from frontend
-- Detection using YOLOv8 for suspicious activity (`cell phone`, etc.)
-- Automatically discards clear screenshots
-- Uploads suspicious screenshots to Cloudinary
-- Flask dashboard to review saved images
-- WebRTC-based PeerJS integration for live camera feeds
+- Student and Teacher login & registration
+- Admin dashboard for exam monitoring
+- Real-time screenshots sent from student browser
+- Detection using YOLOv8 for suspicious activity (`cell phone`, multiple people)
+- MediaPipe face mesh + gaze detection to monitor student attention
+- Brightness check to detect screen reflections
+- Automatically discards non-suspicious screenshots
+- Suspicious screenshots uploaded to Cloudinary
+- PeerJS integration for live camera feeds
+- Violation logs with automatic `stop_exam` after repeated violations
+- Quiz management: add questions, take exams, view results
 
 ---
 
@@ -19,39 +25,59 @@ An AI-powered proctoring web app using Flask, OpenCV, and Ultralytics YOLOv8. It
 
 ### 1. Clone the Repository
 
-```bash
 git clone https://github.com/MustafaNazir11/ASEP-2.git
 cd ASEP-2
-```
 
-
-### 2. Create virtual environment
-```bash
+### 2. Create a Virtual Environment
 python -m venv venv
-```
-#### On Windows:
-```
+
+# On Windows:
 venv\Scripts\activate
-```
-#### On macOS/Linux:
-```
+
+# On macOS/Linux:
 source venv/bin/activate
-```
-### 3. Install Packages
-```
-pip install flask flask-cors opencv-python ultralytics cloudinary
-```
 
-### 4. Run the program 
+### 3. Install Dependencies
 
-```
+pip install -r requirements.txt
+
+### 4. Run the Application
 python app.py
-```
-### 5. Go to the browser and open this link
-```
-127.0.0.1:5000/exam
-```
-#### To view screenshot of cheating detected
-```
-127.0.0.1:5000/view_screenshots
-```
+
+### 5. Open in Browser
+Student Exam Page: http://127.0.0.1:5000/exam
+
+Admin Dashboard: http://127.0.0.1:5000/dashboard
+
+View Suspicious Screenshots: http://127.0.0.1:5000/view_screenshots
+
+# 🛠️ Default Accounts
+Student: student@test.com / password
+
+Teacher/Admin: teacher@test.com / admin123
+
+🗂️ Project Structure
+pgsql
+Copy code
+ASEP-2/
+├─ app.py
+├─ Database.db
+├─ requirements.txt
+├─ templates/
+│   ├─ login.html
+│   ├─ register.html
+│   ├─ exam.html
+│   ├─ dashboard.html
+│   └─ admin-dashboard.html
+├─ static/
+│   ├─ js/
+│   ├─ css/
+│   └─ screenshots/
+├─ utils/
+│   ├─ yolo_detector.py
+│   ├─ face_detector.py
+│   ├─ brightness_check.py
+│   ├─ violation_rules.py
+│   └─ cloud.py
+├─ yolov8s.pt
+└─ README.md
