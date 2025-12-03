@@ -112,7 +112,7 @@
     window.location.href = "/";
   }
 
-  // ------------------ Fullscreen & Focus enforcement ------------------
+  // // ------------------ Fullscreen & Focus enforcement ------------------
   function ensureFullscreen() {
     try {
       if (!document.fullscreenElement) {
@@ -125,54 +125,54 @@
     }
   }
 
-  document.addEventListener("fullscreenchange", () => {
-    if (!document.fullscreenElement) {
-      sendTabViolation("Exited fullscreen");
-      // best-effort to re-request
-      try { document.documentElement.requestFullscreen().catch(()=>{}); } catch(e){}
-    }
-  });
+  // document.addEventListener("fullscreenchange", () => {
+  //   if (!document.fullscreenElement) {
+  //     sendTabViolation("Exited fullscreen");
+  //     // best-effort to re-request
+  //     try { document.documentElement.requestFullscreen().catch(()=>{}); } catch(e){}
+  //   }
+  // });
 
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      sendTabViolation("Page hidden or switched tab");
-      try { document.title = "⚠ RETURN TO EXAM"; } catch(e){}
-    } else {
-      try { document.title = "Exam Page"; } catch(e){}
-      ensureFullscreen();
-      try { window.focus(); } catch(e){}
-    }
-  });
+  // document.addEventListener("visibilitychange", () => {
+  //   if (document.hidden) {
+  //     sendTabViolation("Page hidden or switched tab");
+  //     try { document.title = "⚠ RETURN TO EXAM"; } catch(e){}
+  //   } else {
+  //     try { document.title = "Exam Page"; } catch(e){}
+  //     ensureFullscreen();
+  //     try { window.focus(); } catch(e){}
+  //   }
+  // });
 
-  window.addEventListener("blur", () => {
-    sendTabViolation("Window lost focus (possible alt+tab)");
-  });
+  // window.addEventListener("blur", () => {
+  //   sendTabViolation("Window lost focus (possible alt+tab)");
+  // });
 
-  document.addEventListener("mouseleave", () => {
-    sendTabViolation("Mouse left window");
-  });
+  // document.addEventListener("mouseleave", () => {
+  //   sendTabViolation("Mouse left window");
+  // });
 
-  // Prevent some shortcuts (best-effort)
-  window.addEventListener("keydown", function (e) {
-    const blocked =
-      e.key === "F11" ||
-      e.key === "F12" ||
-      (e.ctrlKey && (e.key === "t" || e.key === "w" || e.key === "Tab" || e.key === "r")) ||
-      (e.metaKey && (e.key === "t" || e.key === "w")) ||
-      (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i")) ||
-      (e.ctrlKey && e.shiftKey && e.key === "C");
+  // // Prevent some shortcuts (best-effort)
+  // window.addEventListener("keydown", function (e) {
+  //   const blocked =
+  //     e.key === "F11" ||
+  //     e.key === "F12" ||
+  //     (e.ctrlKey && (e.key === "t" || e.key === "w" || e.key === "Tab" || e.key === "r")) ||
+  //     (e.metaKey && (e.key === "t" || e.key === "w")) ||
+  //     (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i")) ||
+  //     (e.ctrlKey && e.shiftKey && e.key === "C");
 
-    if (blocked) {
-      e.preventDefault?.();
-      e.stopPropagation?.();
-      sendTabViolation(`Blocked shortcut attempt: ${e.key}`);
-      // Small UX: only alert for particularly serious combos
-      if (e.key === "F12" || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "C"))) {
-        alert("Shortcut disabled during exam.");
-      }
-      return false;
-    }
-  }, true);
+  //   if (blocked) {
+  //     e.preventDefault?.();
+  //     e.stopPropagation?.();
+  //     sendTabViolation(`Blocked shortcut attempt: ${e.key}`);
+  //     // Small UX: only alert for particularly serious combos
+  //     if (e.key === "F12" || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "C"))) {
+  //       alert("Shortcut disabled during exam.");
+  //     }
+  //     return false;
+  //   }
+  // }, true);
 
   // Named handler so we can remove it before deliberate navigation
   function beforeUnloadHandler(e) {
