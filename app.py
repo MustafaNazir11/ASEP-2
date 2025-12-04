@@ -90,6 +90,7 @@ def adminprofile():
 def stud_profile():
     return render_template('profile.html')
 
+<<<<<<< HEAD
 @app.route('/profile')
 def profile():
     if 'user_id' not in session:
@@ -98,6 +99,8 @@ def profile():
 
 
 
+=======
+>>>>>>> ef44fdacd9303b0029e073932764ef8341a78bf0
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -121,7 +124,6 @@ def student_dashboard():
 @app.route('/admin_dashboard')
 def admin_dashboard():
     return render_template('admin-dashboard.html')
-
 
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
@@ -173,7 +175,7 @@ def input_questions():
             if questions[i].strip():
                 cursor.execute('''INSERT INTO questions (question, option_a, option_b, option_c, option_d, correct_option)
                                 VALUES (?, ?, ?, ?, ?, ?)''',
-                                (questions[i], option_as[i], option_bs[i], option_cs[i], option_ds[i], correct_options[i]))
+                               (questions[i], option_as[i], option_bs[i], option_cs[i], option_ds[i], correct_options[i]))
                 count += 1
         conn.commit()
         conn.close()
@@ -274,8 +276,10 @@ def upload_screenshot():
     suspicious = False
     reasons = []
 
-    # YOLO detection
-    person_count, detections = run_yolo_fn(frame)
+    # 🚀 CHANGED: Get annotated frames with boxes!
+    person_count, detections, yolo_frame = run_yolo_fn(frame)  # NEW: 3 values!
+    faces, face_frame = detect_faces_fn(frame)                  # NEW: 2 values!
+
     for label, conf, xyxy in detections:
         suspicious = True
         reasons.append(f"{label} detected")
@@ -283,8 +287,6 @@ def upload_screenshot():
         suspicious = True
         reasons.append("Multiple people detected")
 
-    # Face detection
-    faces = detect_faces_fn(frame)
     if len(faces) == 0:
         suspicious = True
         reasons.append("No face detected")
@@ -325,7 +327,7 @@ def upload_screenshot():
         filename = f"screenshot_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.png"
         import cv2
         image_path = os.path.join(screenshots_folder, filename)
-        cv2.imwrite(image_path, frame)
+        cv2.imwrite(image_path, yolo_frame)  # 🚀 CHANGED: Save ANNOTATED image!
         upload_result = upload_to_cloudinary_fn(image_path)
         os.remove(image_path)
         response = {
@@ -364,7 +366,6 @@ def tab_violation():
     reason = data.get("reason", "Browser/tab violation")
 
     if not peer_id:
-        # if peer id missing, try to infer from request (not implemented currently)
         return jsonify({"message": "Peer ID missing"}), 400
 
     # increment and log
@@ -406,8 +407,6 @@ def delete_peer_id():
         violation_counts.pop(peer_id, None)
         return jsonify({"message": "Peer ID deleted", "peerId": peer_id})
     return jsonify({"message": "Peer ID not found"}), 404
-
-
 
 # ------------ VIEW SCREENSHOTS -----------------
 @app.route("/view_screenshots")

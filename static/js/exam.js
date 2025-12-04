@@ -4,8 +4,8 @@
 
   // ------------------ Config ------------------
   const backendURL = window.location.origin;
-  const FRAME_INTERVAL_MS = 500;      // 2 FPS
-  const VIOLATION_COOLDOWN_MS = 5000; // throttle repeated identical violation reports
+  const FRAME_INTERVAL_MS = 1000;      
+  const VIOLATION_COOLDOWN_MS = 3000; // throttle repeated identical violation reports
   const PEER_HOST = "0.peerjs.com";
   const PEER_PORT = 443;
   const PEER_SECURE = true;
