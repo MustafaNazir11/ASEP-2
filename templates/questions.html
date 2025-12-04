@@ -1,23 +1,408 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Add Questions</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/questions.css') }}">
-    <script src="{{ url_for('static', filename='js/questions.js') }}" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Test – ProctorExam</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --accent: #007bff;
+      --accent-light: #66b3ff;
+      --text-dark: #1f1f1f;
+      --bg-card: rgba(255, 255, 255, 0.6);
+      --bg-light: #f3f8ff;
+      --success: #22c55e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      color: var(--text-dark);
+      background: linear-gradient(135deg, #e6f1ff 0%, #ffffff 100%);
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(circle at center, #b5d8ff, #f3f8ff);
+    }
+
+    .page-container {
+      width: 90%;
+      max-width: 900px;
+      margin: 60px auto;
+      backdrop-filter: blur(10px);
+      text-align: center;
+      animation: fadeUp 0.7s ease-out;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      color: var(--accent);
+      margin-bottom: 10px;
+      text-shadow: 0 0 8px rgba(0,123,255,0.2);
+    }
+
+    p {
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    .create-test-card {
+      background: var(--bg-card);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(20px);
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .create-test-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
+    }
+
+    .create-test-card input {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.1);
+      background: rgba(255,255,255,0.9);
+      color: var(--text-dark);
+      font-size: 1rem;
+      margin-bottom: 20px;
+      outline: none;
+      transition: border-color 0.3s, background 0.3s;
+    }
+
+    .create-test-card input:focus {
+      border-color: var(--accent);
+      background: #ffffff;
+    }
+
+    .create-test-card button {
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      padding: 12px 25px;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .create-test-card button:hover {
+      background: var(--accent-light);
+      transform: translateY(-2px);
+    }
+
+    .questions-section {
+      display: none;
+      margin-top: 40px;
+      animation: fadeUp 0.6s ease forwards;
+    }
+
+    .questions-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      align-items: center;
+    }
+
+    fieldset {
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 15px;
+      padding: 25px;
+      width: 100%;
+      max-width: 800px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+    }
+
+    fieldset:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0, 123, 255, 0.2);
+    }
+
+    legend {
+      color: var(--accent);
+      font-weight: 500;
+      text-align: left;
+      padding: 0 10px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 15px;
+      margin-top: 8px;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.9);
+      color: var(--text-dark);
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.3s, background 0.3s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      background: #fff;
+    }
+
+    .delete-button {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: #e53935;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .delete-button:hover {
+      background: #c62828;
+    }
+
+    #navigation-buttons {
+      margin-top: 40px;
+    }
+
+    #navigation-buttons button {
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 22px;
+      color: white;
+      font-weight: 500;
+      font-size: 1rem;
+      cursor: pointer;
+      margin: 10px;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    #navigation-buttons button:hover {
+      background: var(--accent-light);
+      transform: translateY(-2px);
+    }
+
+    /* ✅ Success Popup */
+    #popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(10px);
+      color: var(--text-dark);
+      border: 1px solid rgba(0,123,255,0.3);
+      padding: 30px 40px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 0 25px rgba(0, 123, 255, 0.15);
+      z-index: 100;
+      opacity: 0;
+      transition: all 0.4s ease;
+    }
+
+    #popup.active {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+
+    #popup h3 {
+      color: var(--success);
+      margin-bottom: 10px;
+    }
+
+    #popup p {
+      color: #333;
+      font-size: 1rem;
+    }
+  </style>
 </head>
+
 <body>
-    <h2>Add Multiple Questions</h2>
-    <form id="question-form" method="POST">
-        <div id="questions-container">
-            <!-- Dynamic question blocks will appear here -->
-        </div>
+  <canvas id="bgCanvas"></canvas>
+
+  <div class="page-container">
+    <div id="create-test-section">
+      <h2><i class="fas fa-pen"></i> Create New Test</h2>
+      <p>Enter your test details to begin adding questions</p>
+
+      <div class="create-test-card">
+        <input type="text" id="test-name" placeholder="Enter Test Name" required />
+        <button onclick="startTest()"><i class="fas fa-play"></i> Create Test</button>
+      </div>
+    </div>
+
+    <div id="questions-section" class="questions-section">
+      <h2><i class="fas fa-plus-circle"></i> Add Questions</h2>
+      <p id="test-name-display"></p>
+
+      <form id="question-form" method="POST">
+        <div id="questions-container" class="questions-grid"></div>
 
         <div id="navigation-buttons">
-            <button type="button" id="prev-btn" onclick="showPrevious()">⬅️ Previous</button>
-            <button type="button" id="next-btn" onclick="showNext()">Next ➡️</button>
-            <button type="button" id="add-btn" onclick="addQuestionBlock()">➕ Add New</button>
-            <button type="submit">✅ Submit All</button>
+          <button type="button" id="add-btn" onclick="addQuestionBlock()">
+            <i class="fas fa-plus"></i> Add Question
+          </button>
+          <button type="submit">
+            <i class="fas fa-check"></i> Submit All
+          </button>
         </div>
-    </form>
+      </form>
+    </div>
+  </div>
+
+  <div id="popup">
+    <h3>✅ Test Created Successfully!</h3>
+    <p id="popup-message"></p>
+  </div>
+
+  <script>
+    // === Background Animation ===
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+    let w, h;
+    let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let lines = [];
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    window.addEventListener("mousemove", (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      const moveX = (mouse.x / window.innerWidth) * 100;
+      const moveY = (mouse.y / window.innerHeight) * 100;
+      canvas.style.background = `radial-gradient(circle at ${moveX}% ${moveY}%, #b8dbff, #f3f8ff 85%)`;
+    });
+
+    for (let i = 0; i < 100; i++) {
+      lines.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        dx: (Math.random() - 0.5) * 2,
+        dy: (Math.random() - 0.5) * 2,
+        hue: 210 + Math.random() * 40
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      const glow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 200);
+      glow.addColorStop(0, "rgba(0, 123, 255, 0.08)");
+      glow.addColorStop(1, "rgba(255, 255, 255, 0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, w, h);
+      lines.forEach(l => {
+        l.x += l.dx; l.y += l.dy;
+        if (l.x < 0 || l.x > w) l.dx *= -1;
+        if (l.y < 0 || l.y > h) l.dy *= -1;
+        ctx.beginPath();
+        const x2 = l.x + Math.sin(Date.now() * 0.0015 + l.x * 0.02) * 35;
+        const y2 = l.y + Math.cos(Date.now() * 0.0015 + l.y * 0.02) * 35;
+        ctx.moveTo(l.x, l.y);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = `hsla(${l.hue}, 100%, 50%, 0.2)`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+
+    // === Create Test Logic ===
+    let testName = "";
+    function startTest() {
+      testName = document.getElementById("test-name").value.trim();
+      if (!testName) return alert("Please enter a test name!");
+      document.getElementById("create-test-section").style.display = "none";
+      document.getElementById("questions-section").style.display = "block";
+      document.getElementById("test-name-display").textContent = "Creating Test: " + testName;
+    }
+
+    // === Question Logic ===
+    function addQuestionBlock() {
+      const container = document.getElementById("questions-container");
+      const questionCount = container.children.length + 1;
+      const fieldset = document.createElement("fieldset");
+      const legend = document.createElement("legend");
+      legend.textContent = "Question " + questionCount;
+      fieldset.appendChild(legend);
+
+      const questionInput = document.createElement("input");
+      questionInput.type = "text";
+      questionInput.name = `question_${questionCount}`;
+      questionInput.placeholder = "Enter your question here";
+      fieldset.appendChild(questionInput);
+
+      for (let i = 1; i <= 4; i++) {
+        const option = document.createElement("input");
+        option.type = "text";
+        option.name = `option_${questionCount}_${i}`;
+        option.placeholder = `Option ${i}`;
+        fieldset.appendChild(option);
+      }
+
+      const correct = document.createElement("input");
+      correct.type = "text";
+      correct.name = `correct_${questionCount}`;
+      correct.placeholder = "Enter correct option (e.g., Option 2)";
+      fieldset.appendChild(correct);
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "Delete";
+      deleteBtn.className = "delete-button";
+      deleteBtn.type = "button";
+      deleteBtn.onclick = () => fieldset.remove();
+      fieldset.appendChild(deleteBtn);
+
+      container.appendChild(fieldset);
+    }
+
+    // === Submit Logic with Popup + Redirect ===
+    document.getElementById("question-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const totalQuestions = document.querySelectorAll("#questions-container fieldset").length;
+      const popup = document.getElementById("popup");
+      const msg = document.getElementById("popup-message");
+
+      msg.innerHTML = `You added <strong>${totalQuestions}</strong> questions to test <strong>${testName}</strong>.`;
+      popup.classList.add("active");
+
+      setTimeout(() => {
+        popup.classList.remove("active");
+        window.location.href = "/admin";
+      }, 2500);
+    });
+  </script>
 </body>
 </html>

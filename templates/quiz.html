@@ -1,86 +1,314 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Quiz</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Quiz – ProctorExam</title>
 
-    <!-- Font + Animation CSS -->
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/student.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Fonts, Icons & Animation -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-    <!-- PeerJS & Custom Script -->
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
-    <!-- SweetAlert2 CDN -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script src="{{ url_for('static', filename='js/student.js') }}" defer></script>
+  <!-- Original Flask Logic Links -->
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/student.css') }}">
+  <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="{{ url_for('static', filename='js/student.js') }}" defer></script>
 </head>
 
 <body>
-    <div class="quiz-container">
-        <div class="quiz-header">
-            <h1 class="animate__animated animate__fadeInDown">Interactive Quiz</h1>
-            <div class="progress-container">
-                <div class="progress-bar"></div>
-            </div>
-            <div class="question-counter">Question <span id="current-question">1</span> of <span
-                    id="total-questions">0</span></div>
+  <canvas id="bgCanvas"></canvas>
+
+  <div class="quiz-wrapper">
+    <header class="quiz-header animate__animated animate__fadeInDown">
+      <h1><i class="fas fa-graduation-cap"></i> Interactive Quiz</h1>
+      <div class="progress-container">
+        <div class="progress-bar"></div>
+      </div>
+      <p class="question-counter">Question <span id="current-question">1</span> of <span id="total-questions">0</span></p>
+    </header>
+
+    <main class="quiz-body">
+      <form method="POST" action="/submit" id="quiz-form">
+        {% for q in questions %}
+        <div class="question-block {% if loop.first %}active{% endif %}">
+          <p class="question-text animate__animated animate__fadeIn"><strong>Q{{ loop.index }}: {{ q[1] }}</strong></p>
+          <div class="options-container">
+            <label class="option animate__animated animate__fadeInLeft">
+              <input type="radio" name="question_{{ q[0] }}" value="A" required>
+              <span class="option-text">A. {{ q[2] }}</span>
+            </label>
+            <label class="option animate__animated animate__fadeInRight">
+              <input type="radio" name="question_{{ q[0] }}" value="B">
+              <span class="option-text">B. {{ q[3] }}</span>
+            </label>
+            <label class="option animate__animated animate__fadeInLeft">
+              <input type="radio" name="question_{{ q[0] }}" value="C">
+              <span class="option-text">C. {{ q[4] }}</span>
+            </label>
+            <label class="option animate__animated animate__fadeInRight">
+              <input type="radio" name="question_{{ q[0] }}" value="D">
+              <span class="option-text">D. {{ q[5] }}</span>
+            </label>
+          </div>
         </div>
+        {% endfor %}
 
-        <form method="POST" action="/submit" id="quiz-form">
-            {% for q in questions %}
-            <div class="question-block {% if loop.first %}active{% endif %}">
-                <p class="question-text animate__animated animate__fadeIn"><strong>Q{{ loop.index }}: {{ q[1]
-                        }}</strong></p>
-                <div class="options-container">
-                    <label class="option animate__animated animate__fadeInLeft">
-                        <input type="radio" name="question_{{ q[0] }}" value="A" required>
-                        <span class="option-text">A. {{ q[2] }}</span>
-                    </label>
-                    <label class="option animate__animated animate__fadeInRight">
-                        <input type="radio" name="question_{{ q[0] }}" value="B">
-                        <span class="option-text">B. {{ q[3] }}</span>
-                    </label>
-                    <label class="option animate__animated animate__fadeInLeft">
-                        <input type="radio" name="question_{{ q[0] }}" value="C">
-                        <span class="option-text">C. {{ q[4] }}</span>
-                    </label>
-                    <label class="option animate__animated animate__fadeInRight">
-                        <input type="radio" name="question_{{ q[0] }}" value="D">
-                        <span class="option-text">D. {{ q[5] }}</span>
-                    </label>
-                </div>
-            </div>
-            {% endfor %}
+        <div class="navigation-buttons">
+          <button type="button" id="prevBtn" class="btn btn-prev">
+            <i class="fas fa-arrow-left"></i> Previous
+          </button>
+          <button type="button" id="nextBtn" class="btn btn-next">
+            Next <i class="fas fa-arrow-right"></i>
+          </button>
+          <button type="submit" id="submitBtn" class="btn btn-submit">
+            Submit Answers <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </form>
+    </main>
 
-            <div class="navigation-buttons">
-                <button type="button" id="prevBtn" class="btn btn-prev">
-                    <i class="fas fa-arrow-left"></i> Previous
-                </button>
-                <button type="button" id="nextBtn" class="btn btn-next">
-                    Next <i class="fas fa-arrow-right"></i>
-                </button>
-                <button type="submit" id="submitBtn" class="btn btn-submit">
-                    Submit Answers <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Webcam for proctoring -->
+    <!-- Hidden Webcam for Proctoring -->
     <video id="webcam" autoplay muted playsinline style="visibility:hidden; width:0; height:0;"></video>
 
-
-    <!-- Violation alerts -->
-    <div id="violationDisplay" style="display:none; color: red; font-weight: bold; text-align:center; padding: 10px;"></div>
-    <div id="examEnded"
-        style="display: none; background: #ffdddd; padding: 20px; text-align: center; font-weight: bold;">
-        🚫 Exam Terminated due to violations.
+    <div id="violationDisplay" style="display:none; color:red; font-weight:bold; text-align:center; padding:10px;"></div>
+    <div id="examEnded" style="display:none; background:#ffdddd; padding:20px; text-align:center; font-weight:bold;">
+      🚫 Exam Terminated due to violations.
     </div>
-</body>
+  </div>
 
+  <!-- ✨ Background Animation Script -->
+  <script>
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+    let w, h;
+    let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let lines = [];
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    window.addEventListener("mousemove", (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      const moveX = (mouse.x / window.innerWidth) * 100;
+      const moveY = (mouse.y / window.innerHeight) * 100;
+      canvas.style.background = `radial-gradient(circle at ${moveX}% ${moveY}%, #b8dbff, #f3f8ff 85%)`;
+    });
+
+    for (let i = 0; i < 120; i++) {
+      lines.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        dx: (Math.random() - 0.5) * 2,
+        dy: (Math.random() - 0.5) * 2,
+        hue: 210 + Math.random() * 40
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      const glow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 200);
+      glow.addColorStop(0, "rgba(0,123,255,0.08)");
+      glow.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, w, h);
+      lines.forEach(l => {
+        l.x += l.dx; l.y += l.dy;
+        if (l.x < 0 || l.x > w) l.dx *= -1;
+        if (l.y < 0 || l.y > h) l.dy *= -1;
+        ctx.beginPath();
+        const x2 = l.x + Math.sin(Date.now() * 0.0015 + l.x * 0.02) * 35;
+        const y2 = l.y + Math.cos(Date.now() * 0.0015 + l.y * 0.02) * 35;
+        ctx.moveTo(l.x, l.y);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = `hsla(${l.hue}, 100%, 50%, 0.2)`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+  </script>
+
+  <style>
+    :root {
+      --accent: #007bff;
+      --accent-light: #66b3ff;
+      --text-dark: #1f1f1f;
+      --bg-card: rgba(255, 255, 255, 0.8);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #e6f1ff 0%, #ffffff 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--text-dark);
+    }
+
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(circle at center, #b5d8ff, #f3f8ff);
+    }
+
+    .quiz-wrapper {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 800px;
+      padding: 30px 40px;
+      animation: fadeUp 0.8s ease-out;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .quiz-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .quiz-header h1 {
+      color: var(--accent);
+      font-size: 2rem;
+      font-weight: 600;
+      text-shadow: 0 0 8px rgba(0,123,255,0.2);
+    }
+
+    .progress-container {
+      width: 100%;
+      height: 10px;
+      background: rgba(0,0,0,0.05);
+      border-radius: 5px;
+      margin: 15px 0;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 10px;
+      background: var(--accent);
+      border-radius: 5px;
+      transition: width 0.3s ease;
+    }
+
+    .question-counter {
+      color: #555;
+      font-weight: 500;
+    }
+
+    .question-block {
+      display: none;
+    }
+
+    .question-block.active {
+      display: block;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .question-text {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    .options-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option {
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 10px;
+      padding: 10px 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .option:hover {
+      background: #e9f3ff;
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    input[type="radio"] {
+      margin-right: 10px;
+      transform: scale(1.2);
+      accent-color: var(--accent);
+    }
+
+    .option-text {
+      flex: 1;
+    }
+
+    .navigation-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 30px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .btn-prev {
+      background: #e9ecef;
+      color: #333;
+    }
+
+    .btn-next {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 4px 15px rgba(0,123,255,0.25);
+    }
+
+    .btn-submit {
+      background: #22c55e;
+      color: white;
+      box-shadow: 0 4px 15px rgba(34,197,94,0.25);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      opacity: 0.9;
+    }
+  </style>
+</body>
 </html>
+

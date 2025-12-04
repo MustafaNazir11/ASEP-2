@@ -90,6 +90,13 @@ def adminprofile():
 def stud_profile():
     return render_template('profile.html')
 
+@app.route('/profile')
+def profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('profile.html')
+
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

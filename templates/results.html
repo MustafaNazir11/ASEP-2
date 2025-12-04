@@ -1,26 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Exam Results</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/results.css') }}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exam Results – ProctorExam</title>
+
+  <!-- Font & Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Flask Logic Link -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/results.css') }}">
 </head>
+
 <body>
-    <div class="result-container">
-        <h1>🎉 Exam Results</h1>
-        <div class="score-box">
-            You scored <span id="score">{{ score }}</span> out of <span id="total">{{ total }}</span>
-        </div>
+  <canvas id="bgCanvas"></canvas>
 
-        <div class="progress-bar">
-            <div class="progress" style="width: {{ percentage }}%"></div>
-        </div>
+  <div class="result-card animate__animated animate__fadeInUp">
+    <h1><i class="fas fa-trophy"></i> Exam Results</h1>
 
-        <p class="message">{{ message }}</p>
-
-        <a href="{{ url_for('student_dashboard') }}" class="back-button">🔙 Back to Dashboard</a>
+    <div class="score-box">
+      <p>You scored <span id="score">{{ score }}</span> out of <span id="total">{{ total }}</span></p>
     </div>
 
-    <script src="{{ url_for('static', filename='js/results.js') }}"></script>
+    <div class="progress-container">
+      <div class="progress-bar" style="width: {{ percentage }}%"></div>
+    </div>
+
+    <div class="percentage-display">
+      <strong>{{ percentage }}%</strong>
+    </div>
+
+    <p class="message">{{ message }}</p>
+
+    <a href="{{ url_for('student_dashboard') }}" class="back-btn">
+      <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/results.js') }}"></script>
+
+  <!-- 🌌 Animated Background Script -->
+  <script>
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+    let w, h;
+    let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let lines = [];
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    window.addEventListener("mousemove", (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      const moveX = (mouse.x / window.innerWidth) * 100;
+      const moveY = (mouse.y / window.innerHeight) * 100;
+      canvas.style.background = `radial-gradient(circle at ${moveX}% ${moveY}%, #b8dbff, #f3f8ff 85%)`;
+    });
+
+    for (let i = 0; i < 120; i++) {
+      lines.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        dx: (Math.random() - 0.5) * 2,
+        dy: (Math.random() - 0.5) * 2,
+        hue: 210 + Math.random() * 40
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      const glow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 200);
+      glow.addColorStop(0, "rgba(0, 123, 255, 0.08)");
+      glow.addColorStop(1, "rgba(255, 255, 255, 0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, w, h);
+      lines.forEach(l => {
+        l.x += l.dx; l.y += l.dy;
+        if (l.x < 0 || l.x > w) l.dx *= -1;
+        if (l.y < 0 || l.y > h) l.dy *= -1;
+        ctx.beginPath();
+        const x2 = l.x + Math.sin(Date.now() * 0.0015 + l.x * 0.02) * 35;
+        const y2 = l.y + Math.cos(Date.now() * 0.0015 + l.y * 0.02) * 35;
+        ctx.moveTo(l.x, l.y);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = `hsla(${l.hue}, 100%, 50%, 0.2)`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+  </script>
+
+  <style>
+    :root {
+      --accent: #007bff;
+      --accent-light: #66b3ff;
+      --success: #22c55e;
+      --text-dark: #1f1f1f;
+      --bg-card: rgba(255, 255, 255, 0.8);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      color: var(--text-dark);
+      background: linear-gradient(135deg, #e6f1ff 0%, #ffffff 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(circle at center, #b5d8ff, #f3f8ff);
+    }
+
+    .result-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      padding: 40px 30px;
+      width: 90%;
+      max-width: 450px;
+      animation: fadeUp 0.8s ease-out;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
+      margin-bottom: 25px;
+    }
+
+    .score-box {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .score-box span {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .progress-container {
+      width: 100%;
+      height: 12px;
+      background: rgba(0,0,0,0.05);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-light));
+      border-radius: 8px;
+      transition: width 1s ease-in-out;
+    }
+
+    .percentage-display {
+      font-size: 1.5rem;
+      color: var(--success);
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .message {
+      color: #444;
+      font-size: 1rem;
+      margin-bottom: 25px;
+    }
+
+    .back-btn {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      padding: 12px 25px;
+      border-radius: 10px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,123,255,0.25);
+    }
+
+    .back-btn:hover {
+      background: var(--accent-light);
+      transform: translateY(-3px);
+    }
+
+    @media (max-width: 480px) {
+      .result-card {
+        padding: 30px 20px;
+      }
+      h1 {
+        font-size: 1.6rem;
+      }
+      .score-box {
+        font-size: 1rem;
+      }
+    }
+  </style>
 </body>
 </html>
+

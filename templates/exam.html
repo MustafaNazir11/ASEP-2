@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Student Exam Page</title>
+  <title>Student Exam – ProctorExam</title>
+
+  <!-- Font & Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Keep Your Original Logic -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/exam.css') }}">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
 </head>
 
 <body>
-  <header>
-    <h1>Exam Page (Student)</h1>
+  <canvas id="bgCanvas"></canvas>
 
+  <header class="exam-header">
+    <h1><i class="fas fa-graduation-cap"></i> Student Exam Portal</h1>
     {% if session.get('email') %}
     <div class="user-info">
       👤 {{ session.get('email') }}
@@ -20,56 +25,43 @@
     {% endif %}
   </header>
 
-  <main class="container" id="exam-form">
-    <p class="instructions">
-      Click <strong>Start Exam</strong> to begin. Your camera will turn on automatically.
-    </p>
-
-    <!-- Shows violation when tab-switching occurs -->
-    <div id="focusWarning" style="color:red; font-weight:600; margin-bottom:10px; display:none;"></div>
-
-    <div id="violationDisplay" style="color:red; font-weight:600;"></div>
-
-    <div class="video-box">
-      <video id="webcam" autoplay playsinline muted></video>
+  <main class="exam-container" id="exam-form">
+    <div class="instructions-box">
+      <p class="instructions">
+        Click <strong>Start Exam</strong> to begin. Your camera will turn on automatically.
+      </p>
+      <div id="focusWarning" style="color:red; font-weight:600; display:none;"></div>
+      <div id="violationDisplay" style="color:red; font-weight:600;"></div>
     </div>
 
-    <!-- Hidden canvas for frame capture -->
-    <canvas id="frameCanvas" width="640" height="480" style="display:none;"></canvas>
+    <div class="video-section">
+      <div class="video-box">
+        <video id="webcam" autoplay playsinline muted></video>
+      </div>
+      <canvas id="frameCanvas" width="640" height="480" style="display:none;"></canvas>
+      <p class="status">Monitoring will start when you proceed.</p>
+    </div>
 
-    <p class="status">Monitoring will start when you proceed.</p>
-
-    <!-- Start exam button -->
-    <button id="proceedBtn">Start Exam</button>
-
-    <!-- Preview Camera Button -->
-    <button id="previewBtn">Preview Camera</button>
+    <div class="exam-buttons">
+      <button id="proceedBtn" class="primary-btn">
+        <i class="fas fa-play"></i> Start Exam
+      </button>
+      <button id="previewBtn" class="secondary-btn">
+        <i class="fas fa-video"></i> Preview Camera
+      </button>
+    </div>
   </main>
 
-  <footer>
+  <footer class="exam-footer">
     &copy; 2025 AI Proctoring System. All rights reserved.
   </footer>
 
+  <!-- Keep your logic scripts -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="{{ url_for('static', filename='js/exam.js') }}"></script>
 
-  <!-- ------------------------------ -->
-  <!--  EXTRA: Ensure protections run if quiz page includes this file too -->
-  <!-- ------------------------------ -->
   <script>
-    // Small helper: if exam_active is set and this page is the quiz,
-    // the exam.js protections (which rely on localStorage flags) will keep working.
-    // We use the same endpoint name used in app.py: /tab-violation
-    
-    // function notifyTabViolationQuick(reason) {
-    //   fetch("/tab-violation", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({ peerId: localStorage.getItem("exam_peer_id") || null, reason })
-    //   }).catch(() => {});
-    // }
-
-    // If the user navigated back to exam.html while exam_active, re-request fullscreen
+    // Maintain fullscreen protection if user navigates back
     if (localStorage.getItem("exam_active") === "1") {
       try {
         if (!document.fullscreenElement) {
@@ -77,7 +69,204 @@
         }
       } catch(e){}
     }
+
+    // === Animated Background Lines ===
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+    let w, h;
+    let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let lines = [];
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    window.addEventListener("mousemove", (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      const moveX = (mouse.x / window.innerWidth) * 100;
+      const moveY = (mouse.y / window.innerHeight) * 100;
+      canvas.style.background = `radial-gradient(circle at ${moveX}% ${moveY}%, #b8dbff, #f3f8ff 85%)`;
+    });
+
+    for (let i = 0; i < 120; i++) {
+      lines.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        dx: (Math.random() - 0.5) * 1.5,
+        dy: (Math.random() - 0.5) * 1.5,
+        hue: 210 + Math.random() * 40
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      const glow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 200);
+      glow.addColorStop(0, "rgba(0, 123, 255, 0.08)");
+      glow.addColorStop(1, "rgba(255, 255, 255, 0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, w, h);
+      lines.forEach(l => {
+        l.x += l.dx;
+        l.y += l.dy;
+        if (l.x < 0 || l.x > w) l.dx *= -1;
+        if (l.y < 0 || l.y > h) l.dy *= -1;
+        ctx.beginPath();
+        const x2 = l.x + Math.sin(Date.now() * 0.0015 + l.x * 0.02) * 35;
+        const y2 = l.y + Math.cos(Date.now() * 0.0015 + l.y * 0.02) * 35;
+        ctx.moveTo(l.x, l.y);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = `hsla(${l.hue}, 100%, 50%, 0.2)`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
   </script>
 
+  <style>
+    :root {
+      --accent: #007bff;
+      --accent-light: #66b3ff;
+      --text-dark: #1f1f1f;
+      --bg-card: rgba(255, 255, 255, 0.7);
+      --border-light: rgba(0,0,0,0.1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      color: var(--text-dark);
+      background: linear-gradient(135deg, #e6f1ff 0%, #ffffff 100%);
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(circle at center, #b5d8ff, #f3f8ff);
+    }
+
+    .exam-header {
+      text-align: center;
+      margin: 40px 0 20px;
+    }
+
+    .exam-header h1 {
+      font-size: 2rem;
+      color: var(--accent);
+      text-shadow: 0 0 10px rgba(0,123,255,0.25);
+      margin-bottom: 10px;
+    }
+
+    .user-info {
+      color: #333;
+      font-weight: 500;
+      background: rgba(255,255,255,0.6);
+      border-radius: 10px;
+      padding: 6px 15px;
+      display: inline-block;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .exam-container {
+      width: 90%;
+      max-width: 700px;
+      background: var(--bg-card);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      backdrop-filter: blur(20px);
+      padding: 30px;
+      text-align: center;
+      animation: fadeUp 0.7s ease-out;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .instructions-box {
+      margin-bottom: 20px;
+    }
+
+    .video-box {
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 20px 0;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+
+    video {
+      width: 100%;
+      border-radius: 12px;
+      background-color: black;
+    }
+
+    .status {
+      font-size: 0.95rem;
+      color: #555;
+      margin-bottom: 15px;
+    }
+
+    .exam-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .primary-btn {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(0,123,255,0.25);
+    }
+
+    .secondary-btn {
+      background: #e5f0ff;
+      color: var(--text-dark);
+      box-shadow: 0 4px 15px rgba(0,123,255,0.1);
+    }
+
+    .primary-btn:hover {
+      background: var(--accent-light);
+      transform: translateY(-3px);
+    }
+
+    .secondary-btn:hover {
+      background: #dbeafe;
+      transform: translateY(-2px);
+    }
+
+    .exam-footer {
+      text-align: center;
+      padding: 20px 0;
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: 40px;
+    }
+  </style>
 </body>
 </html>
+

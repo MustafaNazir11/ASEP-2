@@ -1,503 +1,406 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Proctor - Student Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #4361ee;
-            --secondary: #3f37c9;
-            --accent: #4895ef;
-            --danger: #f72585;
-            --light: #f8f9fa;
-            --dark: #212529;
-        }
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard – ProctorExam</title>
 
-        .dashboard-container {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            min-height: 100vh;
-        }
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-        /* Sidebar Styles */
-        .sidebar {
-            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 2rem 1rem;
-            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-        }
+  <style>
+    :root {
+      --accent: #007bff;
+      --accent-light: #66b3ff;
+      --text-dark: #1f1f1f;
+      --bg-card: rgba(255,255,255,0.8);
+      --shadow-light: rgba(0,0,0,0.05);
+      --sidebar-bg: rgba(255,255,255,0.65);
+    }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding: 0 1rem;
-        }
+    * { margin:0; padding:0; box-sizing:border-box; }
 
-        .brand-icon {
-            font-size: 2rem;
-            margin-right: 10px;
-            color: var(--accent);
-        }
+    body {
+      font-family:'Poppins',sans-serif;
+      background:linear-gradient(135deg,#e6f1ff 0%,#ffffff 100%);
+      min-height:100vh;
+      overflow:hidden;
+      color:var(--text-dark);
+    }
 
-        .brand-name {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
+    #bgCanvas {
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      background:radial-gradient(circle at center,#b5d8ff,#f3f8ff);
+    }
 
-        .nav-menu {
-            list-style: none;
-            padding: 0;
-        }
+    .dashboard-container {
+      display:grid;
+      grid-template-columns:260px 1fr;
+      height:100vh;
+      backdrop-filter:blur(10px);
+    }
 
-        .nav-item {
-            margin-bottom: 1rem;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
+    /* Sidebar */
+    .sidebar {
+      background:var(--sidebar-bg);
+      box-shadow:4px 0 15px var(--shadow-light);
+      padding:2rem 1rem;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
 
-        .nav-item:hover {
-            background-color: rgba(255,255,255,0.1);
-        }
+    .brand {
+      text-align:center;
+      margin-bottom:2rem;
+    }
 
-        .nav-link {
-            color: white;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            padding: 0.8rem 1rem;
-            font-size: 1rem;
-        }
+    .brand i {
+      font-size:2.5rem;
+      color:var(--accent);
+      margin-bottom:10px;
+    }
 
-        .nav-icon {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
+    .brand h2 {
+      color:#333;
+      font-weight:600;
+    }
 
-        /* Main Content Styles */
-        .main-content {
-            padding: 2rem;
-        }
+    .nav-menu {
+      list-style:none;
+      padding:0;
+    }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
+    .nav-menu li {
+      margin-bottom:0.8rem;
+    }
 
-        .page-title h1 {
-            color: var(--dark);
-            margin: 0;
-            font-size: 1.8rem;
-        }
+    .nav-menu a {
+      text-decoration:none;
+      color:#333;
+      padding:0.7rem 1rem;
+      display:flex;
+      align-items:center;
+      border-radius:10px;
+      transition:all 0.3s ease;
+    }
 
-        .page-title p {
-            color: #6c757d;
-            margin: 0;
-        }
+    .nav-menu a i {
+      margin-right:10px;
+      color:var(--accent);
+    }
 
-        .user-actions {
-            display: flex;
-            gap: 1rem;
-        }
+    .nav-menu a:hover {
+      background:rgba(255,255,255,0.8);
+      color:var(--accent);
+      box-shadow:0 0 12px rgba(0,120,255,0.2);
+      transform:translateX(5px);
+    }
 
-        .action-btn {
-            background: white;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.3s;
-            color: var(--dark);
-        }
+    /* Main content */
+    .main-content {
+      padding:2rem 3rem;
+      overflow-y:auto;
+    }
 
-        .action-btn:hover {
-            background: var(--accent);
-            color: white;
-            transform: translateY(-2px);
-        }
+    .header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:2rem;
+    }
 
-        /* Exam Table Styles */
-        .exam-table {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
+    .page-title h1 {
+      color:var(--accent);
+      font-size:1.8rem;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+    .page-title p {
+      color:#555;
+    }
 
-        th, td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e9ecef;
-        }
+    .user-actions {
+      display:flex;
+      gap:1rem;
+    }
 
-        th {
-            background-color: var(--primary);
-            color: white;
-            font-weight: 600;
-        }
+    .action-btn {
+      width:40px;
+      height:40px;
+      border:none;
+      border-radius:50%;
+      background:white;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      box-shadow:0 4px 10px rgba(0,0,0,0.1);
+      transition:all 0.3s ease;
+    }
 
-        tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
+    .action-btn:hover {
+      background:var(--accent);
+      color:white;
+      transform:translateY(-3px);
+    }
 
-        tr:hover {
-            background-color: #e9f5ff;
-        }
+    /* Stats cards */
+    .stats-container {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:1.5rem;
+      margin-bottom:2rem;
+    }
 
-        .exam-status {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
+    .stat-card {
+      background:var(--bg-card);
+      border-radius:16px;
+      padding:1.5rem;
+      box-shadow:0 6px 20px rgba(0,0,0,0.05);
+      display:flex;
+      align-items:center;
+      transition:transform 0.3s ease;
+    }
 
-        .status-upcoming {
-            background-color: #fff3cd;
-            color: #856404;
-        }
+    .stat-card:hover {
+      transform:translateY(-6px);
+      box-shadow:0 8px 25px rgba(0,120,255,0.15);
+    }
 
-        .status-active {
-            background-color: #d4edda;
-            color: #155724;
-        }
+    .stat-icon {
+      width:60px;
+      height:60px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.5rem;
+      margin-right:1rem;
+      background:linear-gradient(135deg,#dbeafe,#ffffff);
+      color:var(--accent);
+    }
 
-        .exam-action {
-            background-color: var(--accent);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
+    .stat-info h3 {
+      font-size:1.4rem;
+      color:#333;
+    }
 
-        .exam-action:hover {
-            background-color: var(--secondary);
-            transform: translateY(-2px);
-        }
+    .stat-info p {
+      color:#666;
+    }
 
-        /* Stats Cards */
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
+    /* Exam Table */
+    .exam-table {
+      background:var(--bg-card);
+      border-radius:16px;
+      box-shadow:0 4px 20px rgba(0,0,0,0.05);
+      overflow:hidden;
+      animation:fadeUp 0.6s ease-out;
+    }
 
-        .stat-card {
-            background: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-        }
+    table {
+      width:100%;
+      border-collapse:collapse;
+    }
 
-        .stat-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 1rem;
-            font-size: 1.5rem;
-        }
+    th, td {
+      padding:1rem;
+      border-bottom:1px solid rgba(0,0,0,0.05);
+    }
 
-        .icon-blue {
-            background-color: #e3f2fd;
-            color: var(--primary);
-        }
+    th {
+      background:var(--accent);
+      color:white;
+      text-align:left;
+    }
 
-        .icon-green {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
+    tr:hover {
+      background:rgba(0,123,255,0.05);
+    }
 
-        .icon-orange {
-            background-color: #fff3e0;
-            color: #e65100;
-        }
+    .exam-status {
+      display:inline-block;
+      padding:0.3rem 0.8rem;
+      border-radius:12px;
+      font-size:0.85rem;
+      font-weight:500;
+    }
 
-        .stat-info h3 {
-            margin: 0;
-            font-size: 1.2rem;
-            color: var(--dark);
-        }
+    .status-upcoming {
+      background:#fff3cd;
+      color:#856404;
+    }
 
-        .stat-info p {
-            margin: 0;
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-    </style>
+    .status-active {
+      background:#d4edda;
+      color:#155724;
+    }
+
+    .exam-action {
+      background:var(--accent);
+      color:white;
+      border:none;
+      padding:0.5rem 1rem;
+      border-radius:8px;
+      cursor:pointer;
+      transition:all 0.3s ease;
+    }
+
+    .exam-action:hover {
+      background:var(--accent-light);
+      transform:translateY(-3px);
+    }
+
+    @keyframes fadeUp {
+      from {opacity:0; transform:translateY(30px);}
+      to {opacity:1; transform:translateY(0);}
+    }
+
+    @media(max-width:768px) {
+      .dashboard-container {grid-template-columns:1fr;}
+      .sidebar {flex-direction:row; overflow-x:auto;}
+      .main-content {padding:1rem;}
+    }
+  </style>
 </head>
+
 <body>
-    <div class="dashboard-container">
-        <!-- Sidebar Navigation -->
-        <div class="sidebar">
-            <div class="brand">
-                <div class="brand-icon">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <div class="brand-name">AI Proctor</div>
-            </div>
-            
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="/profile" class="nav-link">
-                        <i class="fa-solid fa-user nav-icon"></i>
-                          Profile
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" id="dashboard-link">
-                        <i class="fas fa-home nav-icon"></i>
-                        Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-chart-line nav-icon"></i>
-                        Performance
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-cog nav-icon"></i>
-                        Settings
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" id="logout-link">
-                        <i class="fas fa-sign-out-alt nav-icon"></i>
-                        Logout
-                    </a>
-                </li>
-            </ul>
+  <canvas id="bgCanvas"></canvas>
+
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div>
+        <div class="brand">
+          <i class="fas fa-robot"></i>
+          <h2>AI Proctor</h2>
         </div>
 
-        <!-- Main Content Area -->
-        <div class="main-content">
-            <div class="header">
-                <div class="page-title">
-                    <h1>Student Dashboard</h1>
-                    <p>Welcome back! Here's your exam schedule</p>
-                </div>
-                
-                <div class="user-actions">
-                    <button class="action-btn" title="Notifications">
-                        <i class="fas fa-bell"></i>
-                    </button>
-                    <button class="action-btn" title="Messages">
-                        <i class="fas fa-envelope"></i>
-                    </button>
-                    <button class="action-btn" title="Help">
-                        <i class="fas fa-question-circle"></i>
-                    </button>
-                </div>
-            </div>
+        <ul class="nav-menu">
+          <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
+          <li><a href="#" id="dashboard-link"><i class="fas fa-home"></i> Dashboard</a></li>
+          <li><a href="#"><i class="fas fa-chart-line"></i> Performance</a></li>
+          <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+          <li><a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+      </div>
+    </aside>
 
-            <!-- Stats Cards -->
-            <div class="stats-container">
-                <div class="stat-card">
-                    <div class="stat-icon icon-blue">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>4</h3>
-                        <p>Upcoming Exams</p>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon icon-green">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>2</h3>
-                        <p>Completed</p>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon icon-orange">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>1</h3>
-                        <p>Pending Results</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Exam Table -->
-            <div class="exam-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>St.No</th>
-                            <th>Course Code</th>
-                            <th>Course Name</th>
-                            <th>Exam</th>
-                            <th>Quiz Name</th>
-                            <th>Exam Date</th>
-                            <th>Exam Slot</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>CS1012</td>
-                            <td>PROBLEM SOLVING & PROGRAMMING</td>
-                            <td>24-25_52_ESE</td>
-                            <td>GSAID 92 2425</td>
-                            <td>09-06-2025</td>
-                            <td>10:30 to 11:30</td>
-                            <td><span class="exam-status status-upcoming">Upcoming</span></td>
-                            <td><button class="exam-action">View Details</button></td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>HS1073</td>
-                            <td>INDIAN KNOWLEDGE SYSTEM</td>
-                            <td>24-25_52_ESE</td>
-                            <td>IKS ESE GSAI D</td>
-                            <td>12-06-2025</td>
-                            <td>10:30 to 11:30</td>
-                            <td><span class="exam-status status-upcoming">Upcoming</span></td>
-                            <td><button class="exam-action">View Details</button></td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td>G11019</td>
-                            <td>Computer Organization</td>
-                            <td>24-25_52_ESE</td>
-                            <td>ESE MCO EXAM</td>
-                            <td>10-06-2025</td>
-                            <td>10:30 to 11:30</td>
-                            <td><span class="exam-status status-active">Active</span></td>
-                            <td><button class="exam-action">Start Exam</button></td>
-                        </tr>
-                        <tr>
-                            <td>4</td>
-                            <td>G11020</td>
-                            <td>Web Development</td>
-                            <td>24-25_52_ESE</td>
-                            <td>GSAI_D_ESE</td>
-                            <td>11-06-2025</td>
-                            <td>10:30 to 11:30</td>
-                            <td><span class="exam-status status-upcoming">Upcoming</span></td>
-                            <td><button class="exam-action">View Details</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+    <!-- Main content -->
+    <div class="main-content">
+      <div class="header">
+        <div class="page-title">
+          <h1>Student Dashboard</h1>
+          <p>Welcome back! Here's your exam schedule</p>
         </div>
+
+        <div class="user-actions">
+          <button class="action-btn" title="Notifications"><i class="fas fa-bell"></i></button>
+          <button class="action-btn" title="Messages"><i class="fas fa-envelope"></i></button>
+          <button class="action-btn" title="Help"><i class="fas fa-question-circle"></i></button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-container">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+          <div class="stat-info"><h3>4</h3><p>Upcoming Exams</p></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-info"><h3>2</h3><p>Completed</p></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-clock"></i></div>
+          <div class="stat-info"><h3>1</h3><p>Pending Results</p></div>
+        </div>
+      </div>
+
+      <!-- Exam Table -->
+      <div class="exam-table">
+        <table>
+          <thead>
+            <tr>
+              <th>St.No</th>
+              <th>Course Code</th>
+              <th>Course Name</th>
+              <th>Exam</th>
+              <th>Quiz Name</th>
+              <th>Exam Date</th>
+              <th>Exam Slot</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td><td>CS1012</td><td>PROBLEM SOLVING & PROGRAMMING</td><td>24-25_52_ESE</td>
+              <td>GSAID 92 2425</td><td>09-06-2025</td><td>10:30 to 11:30</td>
+              <td><span class="exam-status status-upcoming">Upcoming</span></td>
+              <td><button class="exam-action">View Details</button></td>
+            </tr>
+            <tr>
+              <td>2</td><td>HS1073</td><td>INDIAN KNOWLEDGE SYSTEM</td><td>24-25_52_ESE</td>
+              <td>IKS ESE GSAI D</td><td>12-06-2025</td><td>10:30 to 11:30</td>
+              <td><span class="exam-status status-upcoming">Upcoming</span></td>
+              <td><button class="exam-action">View Details</button></td>
+            </tr>
+            <tr>
+              <td>3</td><td>G11019</td><td>Computer Organization</td><td>24-25_52_ESE</td>
+              <td>ESE MCO EXAM</td><td>10-06-2025</td><td>10:30 to 11:30</td>
+              <td><span class="exam-status status-active">Active</span></td>
+              <td><button class="exam-action">Start Exam</button></td>
+            </tr>
+            <tr>
+              <td>4</td><td>G11020</td><td>Web Development</td><td>24-25_52_ESE</td>
+              <td>GSAI_D_ESE</td><td>11-06-2025</td><td>10:30 to 11:30</td>
+              <td><span class="exam-status status-upcoming">Upcoming</span></td>
+              <td><button class="exam-action">View Details</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+  </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
+  <!-- Animated Background -->
+  <script>
+    const canvas=document.getElementById("bgCanvas");
+    const ctx=canvas.getContext("2d");
+    let w,h;
+    let mouse={x:window.innerWidth/2,y:window.innerHeight/2};
+    let lines=[];
+    function resize(){w=canvas.width=window.innerWidth;h=canvas.height=window.innerHeight;}
+    window.addEventListener("resize",resize);resize();
+    window.addEventListener("mousemove",(e)=>{mouse.x=e.clientX;mouse.y=e.clientY;const moveX=(mouse.x/window.innerWidth)*100;const moveY=(mouse.y/window.innerHeight)*100;canvas.style.background=`radial-gradient(circle at ${moveX}% ${moveY}%, #b8dbff, #f3f8ff 85%)`;});
+    for(let i=0;i<100;i++){lines.push({x:Math.random()*w,y:Math.random()*h,dx:(Math.random()-0.5)*2,dy:(Math.random()-0.5)*2,hue:210+Math.random()*40});}
+    function draw(){ctx.clearRect(0,0,w,h);const glow=ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,200);glow.addColorStop(0,"rgba(0,123,255,0.08)");glow.addColorStop(1,"rgba(255,255,255,0)");ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);lines.forEach(l=>{l.x+=l.dx;l.y+=l.dy;if(l.x<0||l.x>w)l.dx*=-1;if(l.y<0||l.y>h)l.dy*=-1;ctx.beginPath();const x2=l.x+Math.sin(Date.now()*0.0015+l.x*0.02)*35;const y2=l.y+Math.cos(Date.now()*0.0015+l.y*0.02)*35;ctx.moveTo(l.x,l.y);ctx.lineTo(x2,y2);ctx.strokeStyle=`hsla(${l.hue},100%,50%,0.2)`;ctx.lineWidth=1;ctx.stroke();});requestAnimationFrame(draw);}
+    draw();
+  </script>
 
-    // Email coming from Flask
-    const userEmail = "{{ email }}";   // example: raghav.mulay24@example.com
+  <!-- Existing JS logic (unchanged) -->
+  <script>
+    document.addEventListener("DOMContentLoaded",function(){
+      const userEmail="{{ email }}";
+      function extractName(email){if(!email)return"User";const[username]=email.split("@");const clean=username.replace(/[0-9]/g,"");const parts=clean.split(".");if(parts.length>=2){return cap(parts[0])+" "+cap(parts[1]);}return cap(parts[0]);}
+      function cap(str){return str.charAt(0).toUpperCase()+str.slice(1).toLowerCase();}
+      const fullName=extractName(userEmail);
+      const title=document.querySelector(".page-title");
+      const welcomeMsg=document.createElement("p");
+      welcomeMsg.textContent=`Welcome ${fullName}`;
+      welcomeMsg.style.fontWeight="500";welcomeMsg.style.color=varAccent="#007bff";welcomeMsg.style.marginTop="0.5rem";
+      title.appendChild(welcomeMsg);
 
-    // Convert email → name (First Last)
-    function extractName(email) {
-        if (!email) return "User";
-
-        const [username] = email.split("@");  // raghav.mulay24
-        const clean = username.replace(/[0-9]/g, ""); // raghav.mulay
-        const parts = clean.split(".");
-
-        if (parts.length >= 2) {
-            return capitalize(parts[0]) + " " + capitalize(parts[1]);
-        }
-        return capitalize(parts[0]);
-    }
-
-    function capitalize(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    }
-
-    // Extract final name
-    const fullName = extractName(userEmail);
-
-    // Insert welcome text
-    const title = document.querySelector(".page-title");
-    const welcomeMsg = document.createElement("p");
-    welcomeMsg.textContent = `Welcome ${fullName}`;
-    welcomeMsg.style.fontWeight = "500";
-    welcomeMsg.style.color = "#3f37c9";
-    welcomeMsg.style.marginTop = "0.5rem";
-    title.appendChild(welcomeMsg);
-
-    // Dashboard link refresh
-    document.getElementById('dashboard-link').addEventListener('click', function(e) {
-        e.preventDefault();
-        location.reload();
+      document.getElementById('dashboard-link').addEventListener('click',function(e){e.preventDefault();location.reload();});
+      document.getElementById('logout-link').addEventListener('click',function(e){e.preventDefault();if(confirm('Are you sure you want to logout?')){window.location.href='/login';}});
+      document.querySelector('.fa-bell').closest('.action-btn').addEventListener('click',()=>{alert('You have 3 new notifications');});
+      document.querySelector('.fa-envelope').closest('.action-btn').addEventListener('click',()=>{alert('No new messages');});
+      document.querySelector('.fa-question-circle').closest('.action-btn').addEventListener('click',()=>{alert('Help center will open in a new window');});
+      document.querySelectorAll('.exam-action').forEach(btn=>{btn.addEventListener('click',function(){if(this.textContent.includes('Start')){window.location.href='/exam';}else{alert('Exam details will be shown here');}});});
     });
-
-    // Logout
-    document.getElementById('logout-link').addEventListener('click', function(e) {
-        e.preventDefault();
-        if (confirm('Are you sure you want to logout?')) {
-            window.location.href = '/login';
-        }
-    });
-
-    // Notifications
-    document.querySelector('.fa-bell').closest('.action-btn').addEventListener('click', () => {
-        alert('You have 3 new notifications');
-    });
-
-    document.querySelector('.fa-envelope').closest('.action-btn').addEventListener('click', () => {
-        alert('No new messages');
-    });
-
-    document.querySelector('.fa-question-circle').closest('.action-btn').addEventListener('click', () => {
-        alert('Help center will open in a new window');
-    });
-
-    // Exam buttons
-    document.querySelectorAll('.exam-action').forEach(btn => {
-        btn.addEventListener('click', function () {
-            if (this.textContent.includes('Start')) {
-                window.location.href = '/exam';
-            } else {
-                alert('Exam details will be shown here');
-            }
-        });
-    });
-});
-</script>
-
-
+  </script>
 </body>
 </html>

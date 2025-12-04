@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Profile</title>
-  <!-- Font Awesome for icons -->
+  <title>User Profile – ProctorExam</title>
+  
+  <!-- Fonts & Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      --primary-color: #6c5ce7;
-      --secondary-color: #a29bfe;
-      --accent-color: #fd79a8;
-      --dark-color: #2d3436;
-      --light-color: #f5f6fa;
-      --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      --accent: #007bff;
+      --accent-light: #66b3ff;
+      --text-dark: #1f1f1f;
+      --bg-card: rgba(255, 255, 255, 0.75);
+      --border-light: rgba(0, 0, 0, 0.08);
     }
 
     * {
@@ -26,123 +26,91 @@
 
     body {
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      background: linear-gradient(135deg, #e6f1ff 0%, #ffffff 100%);
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
-      color: var(--dark-color);
+      position: relative;
+      overflow: hidden;
+      color: var(--text-dark);
+    }
+
+    /* === Animated Background === */
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(circle at center, #b5d8ff, #f3f8ff);
     }
 
     .profile-card {
-      background: white;
+      width: 90%;
+      max-width: 420px;
+      background: var(--bg-card);
       border-radius: 20px;
-      box-shadow: var(--card-shadow);
-      width: 100%;
-      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(20px);
+      text-align: center;
       overflow: hidden;
-      transform: translateY(0);
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      animation: cardEntrance 0.8s ease-out forwards;
-      opacity: 0;
+      padding-bottom: 25px;
+      animation: fadeUp 0.7s ease-out;
     }
 
-    @keyframes cardEntrance {
-      from {
-        opacity: 0;
-        transform: translateY(50px) scale(0.9);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    .profile-card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .profile-header {
-      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-      color: white;
-      padding: 30px 20px;
-      text-align: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: #fff;
+      padding: 40px 20px 30px;
       position: relative;
-      overflow: hidden;
-    }
-
-    .profile-header::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-      transform: rotate(30deg);
-      animation: shine 3s infinite linear;
-    }
-
-    @keyframes shine {
-      0% { transform: rotate(30deg) translate(-10%, -10%); }
-      100% { transform: rotate(30deg) translate(10%, 10%); }
-    }
-
-    .profile-icon {
-      font-size: 5rem;
-      margin-bottom: 15px;
-      display: inline-block;
-      background: white;
-      color: var(--primary-color);
-      width: 100px;
-      height: 100px;
-      line-height: 100px;
-      border-radius: 50%;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-      animation: iconFloat 3s ease-in-out infinite;
-    }
-
-    @keyframes iconFloat {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
     }
 
     .profile-header h2 {
       font-size: 1.8rem;
       font-weight: 600;
-      letter-spacing: 1px;
-      margin-bottom: 5px;
-      position: relative;
-      display: inline-block;
+      text-shadow: 0 0 8px rgba(255,255,255,0.25);
+      margin-top: 10px;
     }
 
-    .profile-header h2::after {
-      content: '';
-      position: absolute;
-      bottom: -8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 50px;
-      height: 3px;
-      background: white;
-      border-radius: 3px;
+    .profile-icon {
+      font-size: 5rem;
+      background: #fff;
+      color: var(--accent);
+      width: 100px;
+      height: 100px;
+      line-height: 100px;
+      border-radius: 50%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 25px rgba(0, 123, 255, 0.25);
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
     }
 
     .profile-info {
-      padding: 30px;
+      padding: 25px 30px;
+      text-align: left;
     }
 
     .profile-info p {
-      margin-bottom: 15px;
-      padding-bottom: 15px;
-      border-bottom: 1px dashed #eee;
       display: flex;
       justify-content: space-between;
-      animation: fadeIn 0.6s ease-out forwards;
+      align-items: center;
+      border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+      padding: 10px 0;
+      font-size: 0.95rem;
       opacity: 0;
+      animation: slideIn 0.6s ease-out forwards;
     }
 
     .profile-info p:nth-child(1) { animation-delay: 0.2s; }
@@ -151,55 +119,44 @@
     .profile-info p:nth-child(4) { animation-delay: 0.5s; }
     .profile-info p:nth-child(5) { animation-delay: 0.6s; }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateX(-20px); }
-      to { opacity: 1; transform: translateX(0); }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .profile-info strong {
-      color: var(--primary-color);
+      color: var(--accent);
       font-weight: 500;
-      min-width: 100px;
+      min-width: 120px;
       display: inline-block;
     }
 
     .profile-info span {
+      color: #333;
       text-align: right;
       flex-grow: 1;
-      padding-left: 20px;
+      padding-left: 15px;
     }
 
-    /* Decorative elements */
-    .corner-decoration {
+    .corner-circle {
       position: absolute;
-      width: 50px;
-      height: 50px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255,255,255,0.15);
+      z-index: 0;
     }
 
-    .corner-1 {
-      top: -25px;
-      left: -25px;
-    }
+    .circle-1 { top: -40px; left: -40px; }
+    .circle-2 { bottom: -40px; right: -40px; }
 
-    .corner-2 {
-      bottom: -25px;
-      right: -25px;
-    }
-
-    /* Responsive adjustments */
     @media (max-width: 480px) {
-      .profile-card {
-        max-width: 100%;
-      }
-      
       .profile-info p {
         flex-direction: column;
+        align-items: flex-start;
       }
-      
+
       .profile-info span {
-        text-align: left;
         padding-left: 0;
         margin-top: 5px;
       }
@@ -207,13 +164,18 @@
   </style>
 </head>
 <body>
+  <canvas id="bgCanvas"></canvas>
+
   <div class="profile-card">
     <div class="profile-header">
-      <i class="fas fa-user-circle profile-icon"></i>
+      <div class="corner-circle circle-1"></div>
+      <div class="corner-circle circle-2"></div>
+      <div class="profile-icon">
+        <i class="fas fa-user"></i>
+      </div>
       <h2>User Profile</h2>
-      <div class="corner-decoration corner-1"></div>
-      <div class="corner-decoration corner-2"></div>
     </div>
+
     <div class="profile-info">
       <p><strong>Name:</strong> <span>Atharv Mulik</span></p>
       <p><strong>Roll No:</strong> <span>27</span></p>
@@ -224,30 +186,72 @@
   </div>
 
   <script>
-    // Add interactive elements
-    document.addEventListener('DOMContentLoaded', function() {
-      const profileIcon = document.querySelector('.profile-icon');
-      
-      // Add hover effect to profile icon
-      profileIcon.addEventListener('mouseenter', function() {
-        this.style.transform = 'scale(1.1) rotate(10deg)';
-        this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
-      });
-      
-      profileIcon.addEventListener('mouseleave', function() {
-        this.style.transform = 'scale(1) rotate(0)';
-        this.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
-      });
-      
-      // Add click effect to entire card
-      const card = document.querySelector('.profile-card');
-      card.addEventListener('click', function() {
-        this.style.transform = 'scale(0.98)';
-        setTimeout(() => {
-          this.style.transform = 'translateY(-10px)';
-        }, 100);
-      });
+    // Hover effect for profile icon
+    const icon = document.querySelector('.profile-icon');
+    icon.addEventListener('mouseenter', () => {
+      icon.style.transform = 'scale(1.1)';
+      icon.style.boxShadow = '0 10px 30px rgba(0,123,255,0.3)';
     });
+    icon.addEventListener('mouseleave', () => {
+      icon.style.transform = 'scale(1)';
+      icon.style.boxShadow = '0 8px 25px rgba(0,123,255,0.25)';
+    });
+
+    // === Animated Background ===
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+    let w, h;
+    let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let lines = [];
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    window.addEventListener("mousemove", (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      const moveX = (mouse.x / window.innerWidth) * 100;
+      const moveY = (mouse.y / window.innerHeight) * 100;
+      canvas.style.background = `radial-gradient(circle at ${moveX}% ${moveY}%, #b8dbff, #f3f8ff 85%)`;
+    });
+
+    for (let i = 0; i < 100; i++) {
+      lines.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        dx: (Math.random() - 0.5) * 2,
+        dy: (Math.random() - 0.5) * 2,
+        hue: 210 + Math.random() * 40
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      const glow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 200);
+      glow.addColorStop(0, "rgba(0, 123, 255, 0.08)");
+      glow.addColorStop(1, "rgba(255, 255, 255, 0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, w, h);
+      lines.forEach(l => {
+        l.x += l.dx; l.y += l.dy;
+        if (l.x < 0 || l.x > w) l.dx *= -1;
+        if (l.y < 0 || l.y > h) l.dy *= -1;
+        ctx.beginPath();
+        const x2 = l.x + Math.sin(Date.now() * 0.0015 + l.x * 0.02) * 35;
+        const y2 = l.y + Math.cos(Date.now() * 0.0015 + l.y * 0.02) * 35;
+        ctx.moveTo(l.x, l.y);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = `hsla(${l.hue}, 100%, 50%, 0.2)`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
   </script>
 </body>
 </html>

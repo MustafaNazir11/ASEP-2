@@ -3,19 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Profile</title>
-  <!-- Font Awesome -->
+  <title>Admin Profile – ProctorExam</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      --primary-color: #5d5fef;
-      --secondary-color: #8b8df8;
-      --accent-color: #ff6b6b;
-      --dark-color: #2b2d42;
-      --light-color: #f8f9fa;
-      --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      --accent: #007bff;
+      --accent-light: #66b3ff;
+      --text-dark: #1f1f1f;
+      --bg-card: rgba(255, 255, 255, 0.6);
+      --bg-light: #f3f8ff;
     }
 
     * {
@@ -26,23 +24,34 @@
 
     body {
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #dfe3ee 100%);
+      color: var(--text-dark);
+      background: linear-gradient(135deg, #e6f1ff 0%, #ffffff 100%);
+      overflow-x: hidden;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
-      color: var(--dark-color);
+    }
+
+    /* === Animated Background === */
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(circle at center, #b5d8ff, #f3f8ff);
     }
 
     .admin-container {
-      width: 100%;
+      width: 90%;
       max-width: 900px;
-      animation: fadeIn 0.6s ease-out forwards;
+      backdrop-filter: blur(15px);
+      animation: fadeUp 0.7s ease-out forwards;
+      text-align: center;
+      margin: 60px auto;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(30px); }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(40px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
@@ -52,9 +61,10 @@
     }
 
     .admin-header h1 {
-      font-size: 2.5rem;
-      color: var(--primary-color);
-      margin-bottom: 10px;
+      font-size: 2.2rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-shadow: 0 0 8px rgba(0,123,255,0.2);
       position: relative;
       display: inline-block;
     }
@@ -66,50 +76,65 @@
       left: 50%;
       transform: translateX(-50%);
       width: 80px;
-      height: 4px;
-      background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+      height: 3px;
+      background: var(--accent);
       border-radius: 2px;
+      box-shadow: 0 0 10px var(--accent);
     }
 
     .admin-header p {
-      color: #666;
-      font-size: 1.1rem;
+      color: #555;
+      margin-top: 10px;
+      font-size: 1rem;
     }
 
     .admin-card {
-      background: white;
-      border-radius: 15px;
-      box-shadow: var(--card-shadow);
+      background: var(--bg-card);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
       overflow: hidden;
       display: flex;
-      transition: all 0.3s ease;
+      flex-wrap: wrap;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      transition: all 0.4s ease;
+      backdrop-filter: blur(25px);
     }
 
     .admin-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 0 25px rgba(0, 123, 255, 0.25);
+      border-color: rgba(0, 123, 255, 0.5);
     }
 
     .profile-section {
       flex: 1;
-      padding: 30px;
-      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      min-width: 260px;
+      background: rgba(255,255,255,0.5);
+      text-align: center;
+      padding: 2rem 1rem;
       position: relative;
+      transition: all 0.4s ease;
+    }
+
+    .profile-section:hover {
+      box-shadow: 0 0 20px rgba(0,123,255,0.25);
+      border-color: var(--accent-light);
     }
 
     .profile-pic-container {
-      width: 180px;
-      height: 180px;
+      width: 150px;
+      height: 150px;
       border-radius: 50%;
-      border: 5px solid white;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      margin-bottom: 25px;
+      margin: 0 auto 20px;
+      border: 4px solid var(--accent);
+      box-shadow: 0 0 20px rgba(0,123,255,0.2);
       overflow: hidden;
-      position: relative;
       animation: float 4s ease-in-out infinite;
+      transition: box-shadow 0.4s ease, border-color 0.4s ease;
+    }
+
+    .profile-pic-container:hover {
+      border-color: var(--accent-light);
+      box-shadow: 0 0 25px rgba(102,179,255,0.4);
     }
 
     @keyframes float {
@@ -123,16 +148,39 @@
       object-fit: cover;
     }
 
+    .profile-section h3 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .profile-section p {
+      color: #444;
+      font-size: 0.95rem;
+    }
+
     .admin-details {
       flex: 2;
-      padding: 40px;
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.3rem;
     }
 
     .form-group {
-      margin-bottom: 25px;
       position: relative;
-      animation: slideIn 0.5s ease-out forwards;
+      animation: slideIn 0.6s ease-out forwards;
       opacity: 0;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+      padding: 15px;
+      background: rgba(255,255,255,0.5);
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+
+    .form-group:hover {
+      box-shadow: 0 0 15px rgba(0,123,255,0.25);
+      border-color: rgba(0,123,255,0.5);
     }
 
     @keyframes slideIn {
@@ -140,74 +188,61 @@
       to { opacity: 1; transform: translateX(0); }
     }
 
-    .form-group:nth-child(1) { animation-delay: 0.2s; }
-    .form-group:nth-child(2) { animation-delay: 0.3s; }
-    .form-group:nth-child(3) { animation-delay: 0.4s; }
-    .form-group:nth-child(4) { animation-delay: 0.5s; }
-
     label {
       display: block;
       margin-bottom: 8px;
+      color: var(--accent);
       font-weight: 500;
-      color: var(--dark-color);
     }
 
     .input-field {
       width: 100%;
       padding: 12px 15px;
-      border: 2px solid #e0e0e0;
       border-radius: 8px;
       font-family: inherit;
       font-size: 1rem;
-      background-color: #f8f9fa;
+      background: rgba(255,255,255,0.9);
+      color: var(--text-dark);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      transition: border-color 0.3s, background 0.3s;
+    }
+
+    .input-field:hover, .input-field:focus {
+      border-color: var(--accent);
+      background: #fff;
     }
 
     .input-field[readonly] {
-      background-color: #f0f0f0;
       color: #555;
       cursor: not-allowed;
     }
 
     .input-icon {
       position: absolute;
-      right: 15px;
-      top: 40px;
-      color: var(--primary-color);
+      right: 25px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent);
       opacity: 0.7;
+      font-size: 1.1rem;
     }
 
     @media (max-width: 768px) {
       .admin-card {
         flex-direction: column;
-      }
-      .profile-section {
-        padding-bottom: 20px;
+        align-items: center;
       }
       .admin-details {
-        padding: 30px 20px;
+        width: 100%;
+        padding: 2rem 1.5rem;
       }
-    }
-
-    .corner-circle {
-      position: absolute;
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: rgba(93, 95, 239, 0.05);
-    }
-
-    .circle-1 {
-      top: -50px;
-      left: -50px;
-    }
-
-    .circle-2 {
-      bottom: -50px;
-      right: -50px;
     }
   </style>
 </head>
+
 <body>
+  <canvas id="bgCanvas"></canvas>
+
   <div class="admin-container">
     <div class="admin-header">
       <h1>Admin Profile</h1>
@@ -216,10 +251,8 @@
 
     <div class="admin-card">
       <div class="profile-section">
-        <div class="corner-circle circle-1"></div>
-        <div class="corner-circle circle-2"></div>
         <div class="profile-pic-container">
-          <img src="" alt="" class="profile-pic">
+          <img src="https://images.unsplash.com/photo-1603415526960-f7e0328aef22?auto=format&fit=crop&w=400&q=80" alt="Admin" class="profile-pic">
         </div>
         <h3>Administrator</h3>
         <p><i class="fas fa-shield-alt"></i> Super Admin Access</p>
@@ -252,5 +285,64 @@
       </div>
     </div>
   </div>
+
+  <script>
+    // === Background Animation ===
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+    let w, h;
+    let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let lines = [];
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    window.addEventListener("mousemove", (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      const moveX = (mouse.x / window.innerWidth) * 100;
+      const moveY = (mouse.y / window.innerHeight) * 100;
+      canvas.style.background = `radial-gradient(circle at ${moveX}% ${moveY}%, #b8dbff, #f3f8ff 85%)`;
+    });
+
+    for (let i = 0; i < 100; i++) {
+      lines.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        dx: (Math.random() - 0.5) * 2,
+        dy: (Math.random() - 0.5) * 2,
+        hue: 210 + Math.random() * 40
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      const glow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 200);
+      glow.addColorStop(0, "rgba(0, 123, 255, 0.08)");
+      glow.addColorStop(1, "rgba(255, 255, 255, 0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, w, h);
+      lines.forEach(l => {
+        l.x += l.dx; l.y += l.dy;
+        if (l.x < 0 || l.x > w) l.dx *= -1;
+        if (l.y < 0 || l.y > h) l.dy *= -1;
+        ctx.beginPath();
+        const x2 = l.x + Math.sin(Date.now() * 0.0015 + l.x * 0.02) * 35;
+        const y2 = l.y + Math.cos(Date.now() * 0.0015 + l.y * 0.02) * 35;
+        ctx.moveTo(l.x, l.y);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = `hsla(${l.hue}, 100%, 50%, 0.2)`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+  </script>
 </body>
 </html>
+
