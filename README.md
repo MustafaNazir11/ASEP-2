@@ -25,11 +25,11 @@ It captures real-time screenshots from a student’s browser, detects suspicious
 
 ### 1. Clone the Repository
 
-git clone https://github.com/MustafaNazir11/ASEP-2.git
-cd ASEP-2
+git clone https://github.com/MustafaNazir11/AI-Exam-Proctoring-System.git
+cd AI-Exam-Proctoring-System
 
-### 2. Create a Virtual Environment
-python -m venv venv
+### 2. Create a Virtual Environment for Python version 3.10.7 
+python3.10 -m venv venv
 
 # On Windows:
 venv\Scripts\activate
@@ -40,44 +40,22 @@ source venv/bin/activate
 ### 3. Install Dependencies
 
 pip install -r requirements.txt
+pip uninstall torch torchvision torchaudio -y
+pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1
 
 ### 4. Run the Application
 python app.py
 
 ### 5. Open in Browser
-Student Exam Page: http://127.0.0.1:5000/exam
+Login page: http://127.0.0.1:5000/
 
-Admin Dashboard: http://127.0.0.1:5000/dashboard
-
-View Suspicious Screenshots: http://127.0.0.1:5000/view_screenshots
 
 # 🛠️ Default Accounts
-Student: student@test.com / password
+Student: (Register one yourself 😉)
 
 Teacher/Admin: teacher@test.com / admin123
 
-🗂️ Project Structure
-pgsql
-Copy code
-ASEP-2/
-├─ app.py
-├─ Database.db
-├─ requirements.txt
-├─ templates/
-│   ├─ login.html
-│   ├─ register.html
-│   ├─ exam.html
-│   ├─ dashboard.html
-│   └─ admin-dashboard.html
-├─ static/
-│   ├─ js/
-│   ├─ css/
-│   └─ screenshots/
-├─ utils/
-│   ├─ yolo_detector.py
-│   ├─ face_detector.py
-│   ├─ brightness_check.py
-│   ├─ violation_rules.py
-│   └─ cloud.py
-├─ yolov8s.pt
-└─ README.md
+
+
+### Feel free to raise any issue if u find one.
+
