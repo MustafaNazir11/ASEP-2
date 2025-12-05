@@ -1,4 +1,4 @@
-# 🛡️ AI Proctoring System (Flask + YOLOv8 + MediaPipe)
+# 🛡️ AI Based Exam Proctoring System (Flask + YOLOv8 + MediaPipe)
 
 An AI-powered online exam proctoring web application using Flask, OpenCV, YOLOv8, and MediaPipe.  
 It captures real-time screenshots from a student’s browser, detects suspicious behavior (multiple people, phone usage, unusual gaze), and uploads flagged images to Cloudinary. Teachers can monitor exams through a Flask dashboard.
